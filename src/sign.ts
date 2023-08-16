@@ -1,6 +1,6 @@
 import { toRDF } from 'jsonld';
 import { Url, RemoteDocument } from 'jsonld/jsonld-spec';
-import { deriveProof, keyGen, sign, verify, verifyProof, initializeWasm } from '@zkp-ld/rdf-proofs-wasm';
+import { deriveProof, keyGen, sign as signWasm, verify, verifyProof, initializeWasm } from '@zkp-ld/rdf-proofs-wasm';
 import { CONTEXTS } from './contexts';
 
 const customLoader = async (url: Url, callback: (err: Error, remoteDoc: RemoteDocument) => void): Promise<RemoteDocument> => {
@@ -20,7 +20,7 @@ const customLoader = async (url: Url, callback: (err: Error, remoteDoc: RemoteDo
   } as RemoteDocument
 };
 
-export const signBbs = async (unsecuredDocument: any, proofConfig: any, documentLoader: any): Promise<any> => {
+export const sign = async (unsecuredDocument: any, proofConfig: any, documentLoader: any): Promise<any> => {
   await initializeWasm();
 
   const doc = await toRDF(unsecuredDocument, { format: 'application/n-quads', documentLoader: customLoader }) as unknown as string;
@@ -31,7 +31,7 @@ export const signBbs = async (unsecuredDocument: any, proofConfig: any, document
   console.log(`proof: ${proof}`);
   console.log(`docLoader: ${docLoader}`);
 
-  const signature = sign(doc, proof, docLoader);
+  const signature = signWasm(doc, proof, docLoader);
 
   delete proofConfig[`@context`];
   unsecuredDocument.proof = proofConfig;
