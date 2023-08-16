@@ -2,21 +2,21 @@
   "name": "@zkp-ld/jsonld-proofs",
   "version": "0.1.0",
   "description": "",
+  "author": "yamdan",
+  "license": "MIT",
+  "homepage": "https://github.com/zkp-ld/jsonld-proofs#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zkp-ld/jsonld-proofs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zkp-ld/jsonld-proofs/issues"
+  },
   "main": "index.js",
   "scripts": {
     "build": "tsc --pretty",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zkp-ld/jsonld-proofs.git"
-  },
-  "author": "yamdan",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/zkp-ld/jsonld-proofs/issues"
-  },
-  "homepage": "https://github.com/zkp-ld/jsonld-proofs#readme",
   "dependencies": {
     "@zkp-ld/rdf-proofs-wasm": "0.3.0",
     "jsonld": "^8.2.0"
