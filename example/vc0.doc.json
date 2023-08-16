@@ -1,0 +1,41 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/security/data-integrity/v1",
+    "https://zkp-ld.org/bbs-termwise-2021.jsonld",
+    "https://schema.org",
+    {
+      "isPatientOf": "http://example.org/vocab/isPatientOf",
+      "lotNumber": "http://example.org/vocab/lotNumber",
+      "vaccine": {
+        "@id": "http://example.org/vocab/vaccine",
+        "@type": "@id"
+      },
+      "vaccinationDate": "http://example.org/vocab/vaccinationDate",
+      "Vaccination": "http://example.org/vocab/Vaccination",
+      "Vaccine": "http://example.org/vocab/Vaccine"
+    }
+  ],
+  "id": "http://example.org/vcred/00",
+  "type": "VerifiableCredential",
+  "credentialSubject": {
+    "id": "did:example:john",
+    "type": "Person",
+    "isPatientOf": {
+      "type": "Vaccination",
+      "lotNumber": "0000001",
+      "vaccinationDate": {
+        "type": "xsd:dateTime",
+        "@value": "2022-01-01T00:00:00Z"
+      },
+      "vaccine": [
+        "http://example.org/vaccine/a",
+        "http://example.org/vaccine/b"
+      ]
+    },
+    "name": "John Smith"
+  },
+  "expirationDate": "2025-01-01T00:00:00Z",
+  "issuanceDate": "2022-01-01T00:00:00Z",
+  "issuer": "did:example:issuer0"
+}
