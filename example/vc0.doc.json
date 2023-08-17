@@ -11,7 +11,10 @@
         "@id": "http://example.org/vocab/vaccine",
         "@type": "@id"
       },
-      "vaccinationDate": "http://example.org/vocab/vaccinationDate",
+      "vaccinationDate": {
+        "@id": "http://example.org/vocab/vaccinationDate",
+        "@type": "xsd:dateTime"
+      },
       "Vaccination": "http://example.org/vocab/Vaccination",
       "Vaccine": "http://example.org/vocab/Vaccine"
     }
@@ -24,10 +27,7 @@
     "isPatientOf": {
       "type": "Vaccination",
       "lotNumber": "0000001",
-      "vaccinationDate": {
-        "type": "xsd:dateTime",
-        "@value": "2022-01-01T00:00:00Z"
-      },
+      "vaccinationDate": "2022-01-01T00:00:00Z",
       "vaccine": [
         "http://example.org/vaccine/a",
         "http://example.org/vaccine/b"
