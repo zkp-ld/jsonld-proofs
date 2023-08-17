@@ -1,6 +1,6 @@
 import keypair0 from '../example/keypair0.json';
 import vcDraft0 from '../example/vc0.json';
-import { sign, verify } from '../src/sign';
+import { sign, verify } from '../src/api';
 
 console.log(`vcDraft0: ${JSON.stringify(vcDraft0, null, 2)}`);
 console.log(`keypair0: ${JSON.stringify(keypair0, null, 2)}`);
