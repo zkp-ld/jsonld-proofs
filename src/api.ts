@@ -23,6 +23,8 @@ export const sign = async (
     return { error: rdf.error };
   }
   const { document, documentRDF, proof, proofRDF, documentLoaderRDF } = rdf;
+  console.log(documentRDF);
+
   const signature = signWasm(documentRDF, proofRDF, documentLoaderRDF);
 
   proof.proofValue = signature;
@@ -55,4 +57,25 @@ export const verify = async (
 //   documentLoader: JsonLdDocument,
 // ): Promise<JsonLdDocument> => {
 //   await initializeWasm();
+
+//   for (const { vc, disclosed } of vcWithDisclosedPairs) {
+//     const deanonMap = vcDiff(vc, disclosed);
+//     if ('error' in deanonMap) {
+//       return { error: deanonMap.error };
+//     }
+
+//     const rdf = await vc2rdf(vc, documentLoader);
+//     if ('error' in rdf) {
+//       return { error: rdf.error };
+//     }
+
+//     const disclosedRDF = await vc2rdf(disclosed, documentLoader);
+//     if ('error' in disclosedRDF) {
+//       return { error: rdf.error };
+//     }
+
+//     const { documentRDF, proofRDF, documentLoaderRDF } = rdf;
+//     const { documentRDF: disclosedDocumentRDF, proofRDF: disclosedProofRDF } =
+//       disclosedRDF;
+//   }
 // };

@@ -1,3 +1,4 @@
+import { diff } from 'json-diff';
 import { JsonLdDocument, NodeObject, toRDF } from 'jsonld';
 import { Url, RemoteDocument } from 'jsonld/jsonld-spec';
 import { CONTEXTS, DATA_INTEGRITY_CONTEXT } from './contexts';
@@ -64,4 +65,88 @@ export const vc2rdf = async (
   const documentLoaderRDF = await jsonld2rdf(documentLoader);
 
   return { document, documentRDF, proof, proofRDF, documentLoaderRDF };
+};
+
+export const vcDiff = (vc: JsonLdDocument, disclosed: JsonLdDocument) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const diffObj = diff(vc, disclosed);
+
+  const deanonMap = new Map();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const explorer = (node: any): { error?: string } => {
+    if (Array.isArray(node)) {
+      const before: string[] = [];
+      const after: string[] = [];
+      node.forEach((item) => {
+        if (!Array.isArray(item)) {
+          return { error: 'internal error due to json diff' };
+        }
+        if (item[0] === '-') {
+          before.push(item[1] as string);
+        }
+        if (item[0] === '+') {
+          after.push(item[1] as string);
+        }
+      });
+      if (before.length !== after.length) {
+        return {
+          error:
+            'Ambiguity prevents matching pseudonymous parts in disclosed VC to their original values',
+        };
+      }
+      before.forEach((orig, i) => {
+        if (!isBlankNode(after[i])) {
+          return {
+            error:
+              'replaced identifier must be blank node; it must start with `_:`',
+          };
+        }
+        deanonMap.set(after[i], orig);
+      });
+    } else if (typeof node === 'object' && node !== null) {
+      for (const key in node) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, no-prototype-builtins
+        if (node.hasOwnProperty(key)) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, no-prototype-builtins
+          if (node[key].hasOwnProperty('__new')) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const masked = node[key]['__new'];
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            if (!isBlankNode(masked)) {
+              return {
+                error:
+                  'replaced identifier must be blank node; it must start with `_:`',
+              };
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const orig = node[key]['__old'];
+            deanonMap.set(masked, orig);
+          } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const result = explorer(node[key]);
+            if ('error' in result) {
+              return { error: result.error };
+            }
+          }
+        }
+      }
+    }
+
+    return {};
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const result = explorer(diffObj);
+  if ('error' in result) {
+    return { error: result.error };
+  }
+
+  return deanonMap;
+};
+
+const isBlankNode = (key: string) => {
+  return key.startsWith('_:');
 };
