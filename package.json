@@ -15,7 +15,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc --pretty",
-    "test": "jest",
+    "test": "vitest",
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write --loglevel=warn 'src/**/*.{js,jsx,ts,tsx,html,json,gql,graphql}'",
@@ -24,7 +24,8 @@
   "dependencies": {
     "@zkp-ld/rdf-proofs-wasm": "0.7.0",
     "json-diff": "^1.0.6",
-    "jsonld": "^8.2.0"
+    "jsonld": "^8.2.0",
+    "nanoid": "^4.0.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.3",
@@ -41,6 +42,7 @@
     "jest": "^29.6.2",
     "prettier": "^3.0.2",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "vitest": "^0.34.2"
   }
 }
