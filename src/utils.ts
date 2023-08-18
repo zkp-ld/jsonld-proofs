@@ -237,3 +237,28 @@ export const replaceMaskWithSkolemID = (
 
 export const deskolemizeNQuads = (nquads: string) =>
   nquads.replace(SKOLEM_REGEX, '_:$1');
+
+export const jsonldVPFromRDF = async (
+  vpRDF: string,
+  context: jsonld.ContextDefinition,
+) => {
+  const vp_frame: jsonld.JsonLdDocument = {
+    type: 'VerifiablePresentation',
+    proof: {},
+    verifiableCredential: [
+      {
+        type: 'VerifiableCredential',
+      },
+    ],
+  };
+  vp_frame['@context'] = context;
+
+  const vpRDFObj = vpRDF as unknown as object;
+  const expandedJsonld = await jsonld.fromRDF(vpRDFObj, {
+    format: 'application/n-quads',
+  });
+
+  const out = await jsonld.frame(expandedJsonld, vp_frame);
+
+  return out;
+};

@@ -1,18 +1,21 @@
+import * as jsonld from 'jsonld';
 import disclosed0 from '../example/disclosed0.json';
 import disclosed1 from '../example/disclosed1.json';
-import keypair0 from '../example/keypair0.json';
 import keypairs from '../example/keypairs.json';
 import vcDraft0 from '../example/vc0.json';
 import vcDraft1 from '../example/vc1.json';
-import { sign, verify, deriveProof } from '../src/api';
+import _vpContext from '../example/vpContext.json';
+import { sign, verify, deriveProof, verifyProof } from '../src/api';
+
+const vpContext = _vpContext as unknown as jsonld.ContextDefinition;
 
 describe('Proofs', () => {
   test('sign and verify', async () => {
-    const vc0 = await sign(vcDraft0, keypair0);
+    const vc0 = await sign(vcDraft0, keypairs);
     console.log(`vc0: ${JSON.stringify(vc0, null, 2)}`);
     expect(vc0).toBeDefined();
 
-    const verified0 = await verify(vc0, keypair0);
+    const verified0 = await verify(vc0, keypairs);
     console.log(`verified0: ${JSON.stringify(verified0, null, 2)}`);
     expect(verified0.verified).toBeTruthy();
 
@@ -26,7 +29,7 @@ describe('Proofs', () => {
   });
 
   test('deriveProof and verifyProof', async () => {
-    const vc0 = await sign(vcDraft0, keypair0);
+    const vc0 = await sign(vcDraft0, keypairs);
     const vc1 = await sign(vcDraft1, keypairs);
     const nonce = 'abcde';
     const vp = await deriveProof(
@@ -36,8 +39,13 @@ describe('Proofs', () => {
       ],
       nonce,
       keypairs,
+      vpContext,
     );
-    console.log(`vp:${JSON.stringify(vp, null, 2)}`);
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
+
+    const verified = await verifyProof(vp, nonce, keypairs);
+    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
+    expect(verified.verified).toBeTruthy();
   });
 });

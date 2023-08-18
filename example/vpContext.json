@@ -1,0 +1,20 @@
+[
+  "https://www.w3.org/2018/credentials/v1",
+  "https://w3id.org/security/data-integrity/v1",
+  "https://zkp-ld.org/bbs-termwise-2021.jsonld",
+  "https://schema.org",
+  {
+    "isPatientOf": "http://example.org/vocab/isPatientOf",
+    "lotNumber": "http://example.org/vocab/lotNumber",
+    "vaccine": {
+      "@id": "http://example.org/vocab/vaccine",
+      "@type": "@id"
+    },
+    "vaccinationDate": {
+      "@id": "http://example.org/vocab/vaccinationDate",
+      "@type": "xsd:dateTime"
+    },
+    "Vaccination": "http://example.org/vocab/Vaccination",
+    "Vaccine": "http://example.org/vocab/Vaccine"
+  }
+]

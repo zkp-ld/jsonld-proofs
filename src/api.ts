@@ -2,6 +2,7 @@ import {
   sign as signWasm,
   verify as verifyWasm,
   deriveProof as deriveProofWasm,
+  verifyProof as verifyProofWasm,
   initializeWasm,
   VerifyResult,
 } from '@zkp-ld/rdf-proofs-wasm';
@@ -13,6 +14,7 @@ import {
   vcToRDF,
   vcDiff,
   skolemizeJSONLD,
+  jsonldVPFromRDF,
 } from './utils';
 
 export interface VcWithDisclosed {
@@ -65,6 +67,7 @@ export const deriveProof = async (
   vcWithDisclosedPairs: VcWithDisclosed[],
   nonce: string,
   documentLoader: jsonld.JsonLdDocument,
+  context: jsonld.ContextDefinition,
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
@@ -90,9 +93,6 @@ export const deriveProof = async (
     }
     const { deanonMap: localDeanonMap, skolemIDMap } = vcDiffResult;
 
-    console.log('skolemIDMap:');
-    console.log(skolemIDMap);
-
     // update global deanonMap
     for (const [k, v] of localDeanonMap.entries()) {
       if (deanonMap.has(k) && deanonMap.get(k) !== v) {
@@ -114,8 +114,6 @@ export const deriveProof = async (
       }
       node['@id'] = skolemID;
     }
-
-    console.log(`disclosed VC: ${JSON.stringify(disclosedVC, null, 2)}`);
 
     // replace user-defined mask values with Skolem IDs like `urn:bnid:*`
     const skolemizedDisclosedVC = replaceMaskWithSkolemID(
@@ -155,24 +153,6 @@ export const deriveProof = async (
     });
   }
 
-  console.log('vcWithDisclosed:');
-  for (const {
-    vcDocument,
-    vcProof,
-    disclosedDocument,
-    disclosedProof,
-  } of vcWithDisclosed) {
-    console.log('vcDocument:');
-    console.log(vcDocument);
-    console.log('vcProof:');
-    console.log(vcProof);
-    console.log('disclosedDocument:');
-    console.log(disclosedDocument);
-    console.log('disclosedProof:');
-    console.log(disclosedProof);
-  }
-  console.log(deanonMap);
-
   const vp = deriveProofWasm({
     vcWithDisclosed,
     deanonMap,
@@ -180,8 +160,20 @@ export const deriveProof = async (
     documentLoader: documentLoaderRDF,
   });
 
-  console.log(`vp (N-Quads): ${vp}`);
+  const jsonldVP = jsonldVPFromRDF(vp, context);
 
-  // TODO: dummy
-  return {};
+  return jsonldVP;
+};
+
+export const verifyProof = async (
+  vp: jsonld.JsonLdDocument,
+  nonce: string,
+  documentLoader: jsonld.JsonLdDocument,
+) => {
+  const vpRDF = await jsonldToRDF(vp);
+  const documentLoaderRDF = await jsonldToRDF(documentLoader);
+
+  const verified = verifyProofWasm(vpRDF, nonce, documentLoaderRDF);
+
+  return verified;
 };
