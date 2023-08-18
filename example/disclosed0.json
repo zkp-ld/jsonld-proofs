@@ -19,18 +19,20 @@
       "Vaccine": "http://example.org/vocab/Vaccine"
     }
   ],
-  "id": "_:x0",
+  "id": "x0",
   "type": "VerifiableCredential",
   "credentialSubject": {
-    "id": "_:x1",
+    "id": "x1",
     "type": "Person",
-    "name": "_:x2",
     "isPatientOf": {
       "type": "Vaccination",
       "vaccine": [
-        "_:x3",
-        "_:x4"
+        "x3",
+        "x4"
       ]
+    },
+    "worksFor": {
+      "name": "ABC Inc."
     }
   },
   "expirationDate": "2025-01-01T00:00:00Z",

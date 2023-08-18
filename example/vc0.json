@@ -33,7 +33,13 @@
         "http://example.org/vaccine/b"
       ]
     },
-    "name": "John Smith"
+    "name": "John Smith",
+    "worksFor": {
+      "name": "ABC Inc."
+    },
+    "address": {
+      "name": "XYZ city"
+    }
   },
   "expirationDate": "2025-01-01T00:00:00Z",
   "issuanceDate": "2022-01-01T00:00:00Z",

@@ -22,7 +22,7 @@
     "fix": "npm run --silent format; npm run --silent lint:fix"
   },
   "dependencies": {
-    "@zkp-ld/rdf-proofs-wasm": "0.5.0",
+    "@zkp-ld/rdf-proofs-wasm": "0.7.0",
     "json-diff": "^1.0.6",
     "jsonld": "^8.2.0"
   },
