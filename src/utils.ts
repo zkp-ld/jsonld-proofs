@@ -1,5 +1,5 @@
 import { diff } from 'json-diff';
-import { JsonLdDocument, NodeObject, toRDF } from 'jsonld';
+import * as jsonld from 'jsonld';
 import { Url, RemoteDocument } from 'jsonld/jsonld-spec';
 import { customAlphabet } from 'nanoid';
 import { CONTEXTS, DATA_INTEGRITY_CONTEXT } from './contexts';
@@ -29,20 +29,20 @@ export const customLoader = async (
   } as RemoteDocument;
 };
 
-export const jsonldToRDF = async (jsonldDoc: JsonLdDocument) =>
-  (await toRDF(jsonldDoc, {
+export const jsonldToRDF = async (jsonldDoc: jsonld.JsonLdDocument) =>
+  (await jsonld.toRDF(jsonldDoc, {
     format: 'application/n-quads',
     documentLoader: customLoader,
   })) as unknown as string;
 
-export const splitDocAndProof = (vc: JsonLdDocument) => {
+export const splitDocAndProof = (vc: jsonld.JsonLdDocument) => {
   if (!('proof' in vc)) {
     return { error: 'VC must have proof' };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const document: NodeObject = JSON.parse(JSON.stringify(vc));
-  const proof = document.proof as NodeObject;
+  const document: jsonld.NodeObject = JSON.parse(JSON.stringify(vc));
+  const proof = document.proof as jsonld.NodeObject;
   delete document.proof;
 
   if (!('@context' in proof)) {
@@ -53,7 +53,7 @@ export const splitDocAndProof = (vc: JsonLdDocument) => {
   return { document, proof };
 };
 
-export const vcToRDF = async (vc: JsonLdDocument) => {
+export const vcToRDF = async (vc: jsonld.JsonLdDocument) => {
   const documentAndProof = splitDocAndProof(vc);
   if ('error' in documentAndProof) {
     return { error: documentAndProof.error };
@@ -66,7 +66,10 @@ export const vcToRDF = async (vc: JsonLdDocument) => {
   return { document, documentRDF, proof, proofRDF };
 };
 
-export const vcDiff = (vc: JsonLdDocument, disclosed: JsonLdDocument) => {
+export const vcDiff = (
+  vc: jsonld.JsonLdDocument,
+  disclosed: jsonld.JsonLdDocument,
+) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const diffObj = diff(vc, disclosed);
 
@@ -145,7 +148,7 @@ export const vcDiff = (vc: JsonLdDocument, disclosed: JsonLdDocument) => {
 const SKOLEM_PREFIX = 'urn:bnid:';
 const SKOLEM_REGEX = /[<"]urn:bnid:([^>"]+)[>"]/g;
 
-export const skolemizeJSONLD = (vc: JsonLdDocument) => {
+export const skolemizeJSONLD = (vc: jsonld.JsonLdDocument) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const output = JSON.parse(JSON.stringify(vc));
 
@@ -184,11 +187,11 @@ export const skolemizeJSONLD = (vc: JsonLdDocument) => {
 
   _recurse(output);
 
-  return output as JsonLdDocument;
+  return output as jsonld.JsonLdDocument;
 };
 
 export const replaceMaskWithSkolemID = (
-  vc: JsonLdDocument,
+  vc: jsonld.JsonLdDocument,
   deanonMap: Map<string, string>,
 ) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -229,7 +232,7 @@ export const replaceMaskWithSkolemID = (
 
   _recurse(output);
 
-  return output as JsonLdDocument;
+  return output as jsonld.JsonLdDocument;
 };
 
 export const deskolemizeNQuads = (nquads: string) =>

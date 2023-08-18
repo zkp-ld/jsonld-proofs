@@ -5,7 +5,7 @@ import {
   initializeWasm,
   VerifyResult,
 } from '@zkp-ld/rdf-proofs-wasm';
-import { JsonLdDocument } from 'jsonld';
+import * as jsonld from 'jsonld';
 import {
   deskolemizeNQuads,
   jsonldToRDF,
@@ -16,14 +16,14 @@ import {
 } from './utils';
 
 export interface VcWithDisclosed {
-  readonly vc: JsonLdDocument;
-  readonly disclosed: JsonLdDocument;
+  readonly vc: jsonld.JsonLdDocument;
+  readonly disclosed: jsonld.JsonLdDocument;
 }
 
 export const sign = async (
-  vc: JsonLdDocument,
-  documentLoader: JsonLdDocument,
-): Promise<JsonLdDocument> => {
+  vc: jsonld.JsonLdDocument,
+  documentLoader: jsonld.JsonLdDocument,
+): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
   const rdf = await vcToRDF(vc);
@@ -43,8 +43,8 @@ export const sign = async (
 };
 
 export const verify = async (
-  vc: JsonLdDocument,
-  documentLoader: JsonLdDocument,
+  vc: jsonld.JsonLdDocument,
+  documentLoader: jsonld.JsonLdDocument,
 ): Promise<VerifyResult> => {
   await initializeWasm();
 
@@ -64,8 +64,8 @@ export const verify = async (
 export const deriveProof = async (
   vcWithDisclosedPairs: VcWithDisclosed[],
   nonce: string,
-  documentLoader: JsonLdDocument,
-): Promise<JsonLdDocument> => {
+  documentLoader: jsonld.JsonLdDocument,
+): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
   const vcWithDisclosed = [];
