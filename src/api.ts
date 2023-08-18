@@ -12,6 +12,7 @@ import {
   replaceMaskWithSkolemID,
   vcToRDF,
   vcDiff,
+  skolemizeJSONLD,
 } from './utils';
 
 export interface VcWithDisclosed {
@@ -72,33 +73,65 @@ export const deriveProof = async (
   const documentLoaderRDF = await jsonldToRDF(documentLoader);
 
   for (const { vc, disclosed } of vcWithDisclosedPairs) {
-    const localDeanonMap = vcDiff(vc, disclosed);
-    if ('error' in localDeanonMap) {
-      return { error: localDeanonMap.error };
+    // deep copy disclosed VC
+    const disclosedVC = JSON.parse(JSON.stringify(disclosed)) as Record<
+      string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      any
+    >;
+
+    // skolemize VC
+    const skolemizedVC = skolemizeJSONLD(vc);
+
+    // compare VC and disclosed VC to get local deanon map and skolem ID map
+    const vcDiffResult = vcDiff(skolemizedVC, disclosedVC);
+    if ('error' in vcDiffResult) {
+      return { error: vcDiffResult.error };
     }
+    const { deanonMap: localDeanonMap, skolemIDMap } = vcDiffResult;
+
+    console.log('skolemIDMap:');
+    console.log(skolemIDMap);
+
+    // update global deanonMap
     for (const [k, v] of localDeanonMap.entries()) {
       if (deanonMap.has(k) && deanonMap.get(k) !== v) {
         return {
-          error: `pseudonym ${k} corresponds to multiple values: ${v} and ${deanonMap.get(
+          error: `pseudonym \`${k}\` corresponds to multiple values: \`${v}\` and \`${deanonMap.get(
             k,
-          )}`,
+          )}\``,
         };
       }
       deanonMap.set(k, v);
     }
 
-    const skolemizedDisclosed = replaceMaskWithSkolemID(
-      disclosed,
+    // copy Skolem IDs from original VC to disclosed VC
+    for (const [path, skolemID] of skolemIDMap) {
+      let node = disclosedVC;
+      for (const item of path) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        node = node[item];
+      }
+      node['@id'] = skolemID;
+    }
+
+    console.log(`disclosed VC: ${JSON.stringify(disclosedVC, null, 2)}`);
+
+    // replace user-defined mask values with Skolem IDs like `urn:bnid:*`
+    const skolemizedDisclosedVC = replaceMaskWithSkolemID(
+      disclosedVC,
       localDeanonMap,
     );
 
-    const rdf = await vcToRDF(vc);
-    if ('error' in rdf) {
-      return { error: rdf.error };
+    // convert VC to N-Quads
+    const skolemizedRDF = await vcToRDF(skolemizedVC);
+    if ('error' in skolemizedRDF) {
+      return { error: skolemizedRDF.error };
     }
-    const { documentRDF, proofRDF } = rdf;
+    const { documentRDF: skolemizedDocumentRDF, proofRDF: skolemizedProofRDF } =
+      skolemizedRDF;
 
-    const skolemizedDisclosedRDF = await vcToRDF(skolemizedDisclosed);
+    const skolemizedDisclosedRDF = await vcToRDF(skolemizedDisclosedVC);
     if ('error' in skolemizedDisclosedRDF) {
       return { error: skolemizedDisclosedRDF.error };
     }
@@ -107,7 +140,9 @@ export const deriveProof = async (
       proofRDF: skolemizedDisclosedProofRDF,
     } = skolemizedDisclosedRDF;
 
-    const [disclosedDocumentRDF, disclosedProofRDF] = [
+    const [documentRDF, proofRDF, disclosedDocumentRDF, disclosedProofRDF] = [
+      skolemizedDocumentRDF,
+      skolemizedProofRDF,
       skolemizedDisclosedDocumentRDF,
       skolemizedDisclosedProofRDF,
     ].map(deskolemizeNQuads);
@@ -145,7 +180,7 @@ export const deriveProof = async (
     documentLoader: documentLoaderRDF,
   });
 
-  console.log(`vp: ${vp}`);
+  console.log(`vp (N-Quads): ${vp}`);
 
   // TODO: dummy
   return {};

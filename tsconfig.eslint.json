@@ -1,4 +1,7 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": [] /* override tsconfig.json in order to lint test files */
+  "include": [
+    "src",
+    "tests"
+  ], /* override tsconfig.json in order to lint test files */
 }

@@ -1,7 +1,10 @@
 import { diff } from 'json-diff';
 import { JsonLdDocument, NodeObject, toRDF } from 'jsonld';
 import { Url, RemoteDocument } from 'jsonld/jsonld-spec';
+import { customAlphabet } from 'nanoid';
 import { CONTEXTS, DATA_INTEGRITY_CONTEXT } from './contexts';
+
+const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10);
 
 export const customLoader = async (
   url: Url,
@@ -67,10 +70,13 @@ export const vcDiff = (vc: JsonLdDocument, disclosed: JsonLdDocument) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const diffObj = diff(vc, disclosed);
 
+  console.log(`diff: ${JSON.stringify(diffObj, null, 2)}`);
+
   const deanonMap = new Map<string, string>();
+  const skolemIDMap = new Map<string[], string>();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const explorer = (node: any): { error?: string } => {
+  const _recurse = (node: any, path: string[]): { error?: string } => {
     if (Array.isArray(node)) {
       const before: string[] = [];
       const after: string[] = [];
@@ -99,15 +105,20 @@ export const vcDiff = (vc: JsonLdDocument, disclosed: JsonLdDocument) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, no-prototype-builtins
         if (node.hasOwnProperty(key)) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, no-prototype-builtins
-          if (node[key].hasOwnProperty('__new')) {
+          if (key === '__new') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const masked = node[key]['__new'] as string;
+            const masked = node['__new'] as string;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const orig = node[key]['__old'] as string;
+            const orig = node['__old'] as string;
             deanonMap.set(masked, orig);
-          } else {
+          } else if (key === '@id__deleted') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const result = explorer(node[key]);
+            const skolemID = node['@id__deleted'] as string;
+            skolemIDMap.set(path, skolemID);
+          } else {
+            const updatedPath = path.concat([key]);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const result = _recurse(node[key], updatedPath);
             if ('error' in result) {
               return { error: result.error };
             }
@@ -123,16 +134,58 @@ export const vcDiff = (vc: JsonLdDocument, disclosed: JsonLdDocument) => {
   const _makeBlank = (v: string) => (isBlank(v) ? v : `_:${v}`);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const result = explorer(diffObj);
+  const result = _recurse(diffObj, []);
   if ('error' in result) {
     return { error: result.error };
   }
 
-  return deanonMap;
+  return { deanonMap, skolemIDMap };
 };
 
 const SKOLEM_PREFIX = 'urn:bnid:';
 const SKOLEM_REGEX = /[<"]urn:bnid:([^>"]+)[>"]/g;
+
+export const skolemizeJSONLD = (vc: JsonLdDocument) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const output = JSON.parse(JSON.stringify(vc));
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const _recurse = (node: any) => {
+    if (Array.isArray(node)) {
+      node.forEach((item) => {
+        if (typeof item === 'object' && item !== null) {
+          _recurse(item);
+        }
+      });
+    } else if (typeof node === 'object' && node !== null) {
+      for (const key in node) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, no-prototype-builtins
+        if (node.hasOwnProperty(key)) {
+          if (
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            typeof node[key] === 'object' &&
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            node[key] !== null &&
+            // context object should not be skolemized
+            key !== '@context'
+          ) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            _recurse(node[key]);
+          }
+        }
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, no-prototype-builtins
+      if (!node.hasOwnProperty('id') && !node.hasOwnProperty('@id')) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        node['@id'] = `${SKOLEM_PREFIX}${nanoid()}`;
+      }
+    }
+  };
+
+  _recurse(output);
+
+  return output as JsonLdDocument;
+};
 
 export const replaceMaskWithSkolemID = (
   vc: JsonLdDocument,
@@ -147,11 +200,11 @@ export const replaceMaskWithSkolemID = (
     deanonMap.has(item) ? `${SKOLEM_PREFIX}${item}` : item;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const _recursiveReplace = (node: any) => {
+  const _recurse = (node: any) => {
     if (Array.isArray(node)) {
       node.forEach((item, i) => {
         if (typeof item === 'object' && item !== null) {
-          _recursiveReplace(item);
+          _recurse(item);
         } else {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           node[i] = _replace(item);
@@ -164,7 +217,7 @@ export const replaceMaskWithSkolemID = (
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           if (typeof node[key] === 'object' && node[key] !== null) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            _recursiveReplace(node[key]);
+            _recurse(node[key]);
           } else {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             node[key] = _replace(node[key]);
@@ -172,11 +225,9 @@ export const replaceMaskWithSkolemID = (
         }
       }
     }
-
-    return {};
   };
 
-  _recursiveReplace(output);
+  _recurse(output);
 
   return output as JsonLdDocument;
 };
