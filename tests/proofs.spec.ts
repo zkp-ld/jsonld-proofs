@@ -5,11 +5,19 @@ import keypairs from '../example/keypairs.json';
 import vcDraft0 from '../example/vc0.json';
 import vcDraft1 from '../example/vc1.json';
 import _vpContext from '../example/vpContext.json';
-import { sign, verify, deriveProof, verifyProof } from '../src/api';
+import { sign, verify, deriveProof, verifyProof, keyGen } from '../src/api';
 
 const vpContext = _vpContext as unknown as jsonld.ContextDefinition;
 
 describe('Proofs', () => {
+  test('keyGen', async () => {
+    const keypair = await keyGen();
+    console.log(`keypair: ${JSON.stringify(keypair, null, 2)}`);
+
+    expect(keypair.secretKey).toBeDefined();
+    expect(keypair.publicKey).toBeDefined();
+  });
+
   test('sign and verify', async () => {
     const vc0 = await sign(vcDraft0, keypairs);
     console.log(`vc0: ${JSON.stringify(vc0, null, 2)}`);

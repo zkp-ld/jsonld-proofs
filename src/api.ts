@@ -1,10 +1,12 @@
 import {
+  keyGen as keyGenWasm,
   sign as signWasm,
   verify as verifyWasm,
   deriveProof as deriveProofWasm,
   verifyProof as verifyProofWasm,
   initializeWasm,
   VerifyResult,
+  KeyPair,
 } from '@zkp-ld/rdf-proofs-wasm';
 import * as jsonld from 'jsonld';
 import {
@@ -21,6 +23,14 @@ export interface VcWithDisclosed {
   readonly vc: jsonld.JsonLdDocument;
   readonly disclosed: jsonld.JsonLdDocument;
 }
+
+export const keyGen = async (): Promise<KeyPair> => {
+  await initializeWasm();
+
+  const keypair = keyGenWasm();
+
+  return keypair;
+};
 
 export const sign = async (
   vc: jsonld.JsonLdDocument,
