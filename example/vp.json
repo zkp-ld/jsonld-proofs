@@ -1,0 +1,76 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/security/data-integrity/v1",
+    "https://zkp-ld.org/bbs-termwise-2021.jsonld",
+    "https://schema.org",
+    {
+      "isPatientOf": "http://example.org/vocab/isPatientOf",
+      "lotNumber": "http://example.org/vocab/lotNumber",
+      "vaccine": {
+        "@id": "http://example.org/vocab/vaccine",
+        "@type": "@id"
+      },
+      "vaccinationDate": {
+        "@id": "http://example.org/vocab/vaccinationDate",
+        "@type": "xsd:dateTime"
+      },
+      "Vaccination": "http://example.org/vocab/Vaccination",
+      "Vaccine": "http://example.org/vocab/Vaccine"
+    }
+  ],
+  "type": "VerifiablePresentation",
+  "verifiableCredential": [
+    {
+      "type": "VerifiableCredential",
+      "proof": {
+        "type": "DataIntegrityProof",
+        "created": "2023-02-09T09:35:07Z",
+        "cryptosuite": "bbs-termwise-signature-2023",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:example:issuer0#bls12_381-g2-pub001"
+      },
+      "credentialSubject": {
+        "type": "Person",
+        "isPatientOf": {
+          "type": "Vaccination",
+          "vaccine": [
+            "_:b0",
+            {}
+          ]
+        },
+        "worksFor": {
+          "name": "ABC Inc."
+        }
+      },
+      "expirationDate": "2025-01-01T00:00:00Z",
+      "issuanceDate": "2022-01-01T00:00:00Z",
+      "issuer": "did:example:issuer0"
+    },
+    {
+      "type": "VerifiableCredential",
+      "proof": {
+        "type": "DataIntegrityProof",
+        "created": "2023-02-03T09:49:25Z",
+        "cryptosuite": "bbs-termwise-signature-2023",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:example:issuer3#bls12_381-g2-pub001"
+      },
+      "credentialSubject": {
+        "id": "_:b0",
+        "type": "Vaccine",
+        "status": "active"
+      },
+      "expirationDate": "2023-12-31T00:00:00Z",
+      "issuanceDate": "2020-01-01T00:00:00Z",
+      "issuer": "did:example:issuer3"
+    }
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2023-08-19T05:05:55.253Z",
+    "cryptosuite": "bbs-termwise-proof-2023",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "uomVwcm9vZlkKGgIAAAAAAAAAAJAqED2TTPiFaFHxzMhRRsl181arNuv5roNGzhxE5oH_SshCjcqdeXmiXoPqQnsJmJYINwVMAqL8uJR5si43jaga10eX94d0gWWx0DmF0dY6iWMCLCX_xSs-C-RaKVJido8NC0ee2OP91idzs27IBiSxkVyqm96p-jXKUemwCitXrC3GhJhi8dmiaAe2Kp8AB7OQFadDnjAuOZ-14cbam3Zw3RW_UO_4ecYClW2M1BoqWOmBCAqeUjpi9P4XzI9IzAIAAAAAAAAAfDEugSS0_iTFcam9qoaOBoY9UO3G7Khy-fKsISN0fSFOhgk40YvCwZsSI7Yn6CXYcyihTAMN6CBRKSMqkfLBKqvR3bUcnTUY_MB2HI68j49mOSz28njczUNWzhW03P6fWuHrsNe33LNyTQDxS7dFuicAAAAAAAAAqJOOC94q1816X-NsraBQj6IH1kzkFlc33e3ZH51z7lsjKLTC0mUuOZ2Wjq43AojklHf6ts1PqpKDWq-QvL1dINhkXaXJxCh_WTbmUIr6c1X3SOnSEwFU0aGCF2sF72hRI3HFO6H6r3dg8lWA4cElZmMNunmj_BPDltyaOIwJFjEyo8AggTYe-hkor4cphJGoOi7mI7MTdUOobDkIugaGN9EQLH7wYvZF7TPUA098M8KWKj5MdTDh3iqPM8m7Z_1QCQIzXcPydWl9pO1bODA8xL_R7X2LLvRJ6W3A_qHBYysuqkVCcEU88m9Ow5_DZ0abPROjSURKXPzq6ixYOlDAMAnZfTYN4_4vZo6dD80aaBnZrqP2KQ9ylb2HlqO8GeNN3jhJ-n0cVY0vZwThXjFazNzsQSPHr_KwKwN3lcuw_xzYZF2lycQof1k25lCK-nNV90jp0hMBVNGhghdrBe9oUUyZzGw4kvE6xrYzcvKugE5TDVjr018zERKcK2xDOgtF2GRdpcnEKH9ZNuZQivpzVfdI6dITAVTRoYIXawXvaFHSI9jdbwqNVfCCJ1zIe2X1f3jj7x3N0DG8uwUy37WlONIj2N1vCo1V8IInXMh7ZfV_eOPvHc3QMby7BTLftaU42GRdpcnEKH9ZNuZQivpzVfdI6dITAVTRoYIXawXvaFHSI9jdbwqNVfCCJ1zIe2X1f3jj7x3N0DG8uwUy37WlONIj2N1vCo1V8IInXMh7ZfV_eOPvHc3QMby7BTLftaU40iPY3W8KjVXwgidcyHtl9X944-8dzdAxvLsFMt-1pThMmcxsOJLxOsa2M3LyroBOUw1Y69NfMxESnCtsQzoLRQ011cww3J6Rc_93qgiugZTb0h7mwzCMO0y0C9Mh-nBSigs6YLV04i8ZIMZ2Ro1Y6W4GjYhs5QvnCwtipUazci1gQzvO4AP2yI_X3Mep6wO033Loom9WnJaqRgs8o2LVKQkvYsBhiwcLUbZnITe2_1j_B6XgOa539xr28XuQPqhefqfb08C1EWhmWEing6ftWJKQ9ATYrD-npH9GeQs76zhO3Np4HLjePG2v75jISxyWUD5QtWwWXJqUeaf85XxFQiNxxTuh-q93YPJVgOHBJWZjDbp5o_wTw5bcmjiMCRYxfxs3TsbD6TBOtInfELJPu3SN3Ujplg6rPtceFKVx9VIjccU7ofqvd2DyVYDhwSVmYw26eaP8E8OW3Jo4jAkWMT_iI1MTPVIswMykNJ7fsydgFTkcN2-AyanM0EaxI8tHI3HFO6H6r3dg8lWA4cElZmMNunmj_BPDltyaOIwJFjEMErAE1iOWeeIoGwjk3Fr82WmH8WddTn-q-FBii7bsX2t1DeqBqOIsxNBK3G8dSloR5wLyolMBnBmCE1kB6MJFIHTfUFlzPgvDekU-Z71cf53p81FpWqt4PNi5CLFTFD9OVdpoyjKsS_JZitZX-ZGcMZIzRBC35eZlX4cpjMPTM05V2mjKMqxL8lmK1lf5kZwxkjNEELfl5mVfhymMw9MzTlXaaMoyrEvyWYrWV_mRnDGSM0QQt-XmZV-HKYzD0zNOVdpoyjKsS_JZitZX-ZGcMZIzRBC35eZlX4cpjMPTM05V2mjKMqxL8lmK1lf5kZwxkjNEELfl5mVfhymMw9MzAKPZ_ii1hLk345OQJfSoftGFqZKD6cwbQN8fCSfSVCnM5pJzbZMmeGXGNGYOLxwwObZRsAlCmhCzpZbuE9xvkQgO6ygAwuSKqqgzJZIBEsltdsVk4NpRgbleBpQOJBxVv5fjdFpELZ-z-aOluxxt8bSPgfNp9uKY4xTACVRaJeaocCM-sI55KGATNU-jPThq8plVc3ogJpl5lAKwxfAvax4dlNrKp5R9Rn4mDhmp0bTX7BJtv-kP8VB8CTWfg0mXdwIAAAAAAAAAI4WuE5Fwdq7DExzo9Q7lWzuW9ilgOPGzfDKlbkpIXTpMBzDxaOpWQqBjl2ArQwzJuj9V8l7-Zlwd6AJRQhiUG4Lgcazs0rpUNEs1Vqz6i31WSgreWyCakOAe0DTO4G4as96Hq6BC6mG38GcFr3D-MBUAAAAAAAAAvGNm-3zc9NWfCZcNa1HYdqFtxrMRlMNk8aiI1NV3YmGXDfFhQKBNFIfTXN0R_imDmhHTTF3Nw9_FXw25m8FcG_wtPXSyGZcrZgPEWBYaWBg2Qw59NVkFHPhfvtJN-IZWRr-wmtDpcCXtAA2d4XrwZj8TjAvoIDrTgxrHkj07oQb7ug1pFrUu5Mje17WvyoDJRd8z7qB7dBJZNz-7RwvXDNvFwjmEAXxzgEnH1MwSg8xVQQEteCT3fIvak_aKR2Rots5xtGYih3VA1546V0HN24A7xrZc5dJzUNKSW2jszhh_VJdwcmYoXneCokue12CZCpoWe9VA97HY7s1lRZOXOH8bN07Gw-kwTrSJ3xCyT7t0jd1I6ZYOqz7XHhSlcfVSfxs3TsbD6TBOtInfELJPu3SN3Ujplg6rPtceFKVx9VLThclXKmObL5OgLZXnVPjyqmDLBRYus41ARDwT3edlA9OFyVcqY5svk6AtledU-PKqYMsFFi6zjUBEPBPd52UDfxs3TsbD6TBOtInfELJPu3SN3Ujplg6rPtceFKVx9VLThclXKmObL5OgLZXnVPjyqmDLBRYus41ARDwT3edlA9OFyVcqY5svk6AtledU-PKqYMsFFi6zjUBEPBPd52UD04XJVypjmy-ToC2V51T48qpgywUWLrONQEQ8E93nZQMQ9GweBGOKZYQY2qFjwmh_ss0g7aoVJmzeU1slvdo7LRD0bB4EY4plhBjaoWPCaH-yzSDtqhUmbN5TWyW92jstEPRsHgRjimWEGNqhY8Jof7LNIO2qFSZs3lNbJb3aOy0Q9GweBGOKZYQY2qFjwmh_ss0g7aoVJmzeU1slvdo7LRD0bB4EY4plhBjaoWPCaH-yzSDtqhUmbN5TWyW92jstAQUAAAAAAAAAYWJjZGUAAGlpbmRleF9tYXCCpGExjAoAAwQODQ8FBgcICWEyEWEzhQABAgMEYTQFpGExhwIDBAUGBwhhMglhM4UAAQIDBGE0BQ"
+  }
+}

@@ -180,6 +180,8 @@ export const verifyProof = async (
   nonce: string,
   documentLoader: jsonld.JsonLdDocument,
 ) => {
+  await initializeWasm();
+
   const vpRDF = await jsonldToRDF(vp);
   const documentLoaderRDF = await jsonldToRDF(documentLoader);
 

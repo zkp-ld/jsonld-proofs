@@ -114,10 +114,17 @@ export const vcDiff = (
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const orig = node['__old'] as string;
             deanonMap.set(masked, orig);
-          } else if (key === '@id__deleted') {
+          } else if (key === '@id__deleted' || key === 'id__deleted') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const skolemID = node['@id__deleted'] as string;
-            skolemIDMap.set(path, skolemID);
+            const value = node[key] as string;
+            if (value.startsWith(SKOLEM_PREFIX)) {
+              skolemIDMap.set(path, value);
+            } else {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              const masked = nanoid();
+              deanonMap.set(masked, value);
+              skolemIDMap.set(path, masked);
+            }
           } else {
             const updatedPath = path.concat([key]);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
