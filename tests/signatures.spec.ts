@@ -30,4 +30,22 @@ describe('Signatures', () => {
     console.log(`verified1: ${JSON.stringify(verified1, null, 2)}`);
     expect(verified1.verified).toBeTruthy();
   });
+
+  test('empty keypairs', async () => {
+    await expect(sign(vcDraft0, {})).rejects.toThrowError(
+      'RDFProofsError(InvalidVerificationMethod)',
+    );
+  });
+
+  test("VC's verification method does not exist in keypairs", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const invalidVC = JSON.parse(JSON.stringify(vcDraft0));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    invalidVC.proof.verificationMethod = 'did:example:issuer_not_exist#key';
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await expect(sign(invalidVC, keypairs)).rejects.toThrowError(
+      'RDFProofsError(InvalidVerificationMethod)',
+    );
+  });
 });
