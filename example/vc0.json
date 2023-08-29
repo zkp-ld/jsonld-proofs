@@ -28,10 +28,7 @@
       "type": "Vaccination",
       "lotNumber": "0000001",
       "vaccinationDate": "2022-01-01T00:00:00Z",
-      "vaccine": [
-        "http://example.org/vaccine/a",
-        "http://example.org/vaccine/b"
-      ]
+      "vaccine": "http://example.org/vaccine/a"
     },
     "name": "John Smith",
     "worksFor": {

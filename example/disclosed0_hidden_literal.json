@@ -19,23 +19,16 @@
       "Vaccine": "http://example.org/vocab/Vaccine"
     }
   ],
-  "id": "http://example.org/vcred/00",
   "type": "VerifiableCredential",
   "credentialSubject": {
-    "id": "did:example:john",
     "type": "Person",
     "isPatientOf": {
       "type": "Vaccination",
-      "lotNumber": "0000001",
-      "vaccinationDate": "2022-01-01T00:00:00Z",
-      "vaccine": "http://example.org/vaccine/a"
+      "vaccinationDate": "xdate",
+      "vaccine": "x3"
     },
-    "name": "John Smith",
     "worksFor": {
       "name": "ABC Inc."
-    },
-    "address": {
-      "name": "XYZ city"
     }
   },
   "expirationDate": "2025-01-01T00:00:00Z",

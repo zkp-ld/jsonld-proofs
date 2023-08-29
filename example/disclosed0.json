@@ -19,17 +19,12 @@
       "Vaccine": "http://example.org/vocab/Vaccine"
     }
   ],
-  "id": "x0",
   "type": "VerifiableCredential",
   "credentialSubject": {
-    "id": "x1",
     "type": "Person",
     "isPatientOf": {
       "type": "Vaccination",
-      "vaccine": [
-        "x3",
-        "x4"
-      ]
+      "vaccine": "x3"
     },
     "worksFor": {
       "name": "ABC Inc."

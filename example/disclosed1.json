@@ -19,10 +19,8 @@
       "Vaccine": "http://example.org/vocab/Vaccine"
     }
   ],
-  "id": "x10",
   "type": "VerifiableCredential",
   "credentialSubject": {
-    "id": "x3",
     "type": "Vaccine",
     "status": "active"
   },
