@@ -4,6 +4,7 @@ import { Url, RemoteDocument } from 'jsonld/jsonld-spec';
 import { customAlphabet } from 'nanoid';
 import { CONTEXTS, DATA_INTEGRITY_CONTEXT } from './contexts';
 
+const PROOF = 'https://w3id.org/security#proof';
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10);
 
 export const customLoader = async (
@@ -36,25 +37,55 @@ export const jsonldToRDF = async (jsonldDoc: jsonld.JsonLdDocument) =>
   })) as unknown as string;
 
 export const splitDocAndProof = (vc: jsonld.JsonLdDocument) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const document = JSON.parse(JSON.stringify(vc)) as jsonld.JsonLdDocument;
+
   if (!('proof' in vc)) {
     return { error: 'VC must have proof' };
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const document: jsonld.NodeObject = JSON.parse(JSON.stringify(vc));
-  const proof = document.proof as jsonld.NodeObject;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const proof = document.proof as jsonld.JsonLdDocument;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   delete document.proof;
 
-  if (!('@context' in proof)) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    proof['@context'] = DATA_INTEGRITY_CONTEXT;
-  }
-
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   return { document, proof };
 };
 
 export const vcToRDF = async (vc: jsonld.JsonLdDocument) => {
   const documentAndProof = splitDocAndProof(vc);
+  if ('error' in documentAndProof) {
+    return { error: documentAndProof.error };
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { document, proof } = documentAndProof;
+
+  if (!('@context' in proof)) {
+    proof['@context'] = DATA_INTEGRITY_CONTEXT;
+  }
+
+  const documentRDF = await jsonldToRDF(document);
+  const proofRDF = await jsonldToRDF(proof);
+
+  return { document, documentRDF, proof, proofRDF };
+};
+
+export const splitExpandedDocAndProof = (vc: jsonld.JsonLdDocument) => {
+  const document = JSON.parse(JSON.stringify(vc)) as jsonld.JsonLdDocument;
+
+  // TODO: fix me
+  if (!(Array.isArray(document) && PROOF in document[0])) {
+    return { error: 'VC must have proof' };
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const proof = document[0][PROOF][0]['@graph'] as jsonld.JsonLdDocument;
+  delete document[0][PROOF];
+
+  return { document, proof };
+};
+
+export const expandedVCToRDF = async (vc: jsonld.JsonLdDocument) => {
+  const documentAndProof = splitExpandedDocAndProof(vc);
   if ('error' in documentAndProof) {
     return { error: documentAndProof.error };
   }
@@ -73,62 +104,91 @@ export const vcDiff = (
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const diffObj = diff(vc, disclosed);
 
-  console.log(`diff: ${JSON.stringify(diffObj, null, 2)}`);
-
   const deanonMap = new Map<string, string>();
-  const skolemIDMap = new Map<string[], string>();
+  const skolemIDMap = new Map<(string | number)[], string>();
+  const maskedIDMap = new Map<(string | number)[], string>();
+  const maskedLiteralMap = new Map<(string | number)[], string>();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const _recurse = (node: any, path: string[]): { error?: string } => {
+  const _recurse = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    node: any,
+    path: (string | number)[],
+  ): { error?: string } => {
     if (Array.isArray(node)) {
-      const before: string[] = [];
-      const after: string[] = [];
-      node.forEach((item) => {
-        if (!Array.isArray(item)) {
-          return { error: 'internal error due to json diff' };
+      node.forEach((item, i) => {
+        const updatedPath = path.concat([i]);
+
+        if (!Array.isArray(item) || item.length !== 2) {
+          return { error: 'json-diff error' };
         }
-        if (item[0] === '-') {
-          before.push(item[1] as string);
+        if (item[0] === '~') {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          const result = _recurse(item[1], updatedPath);
+          if ('error' in result) {
+            return { error: result.error };
+          }
         }
-        if (item[0] === '+') {
-          after.push(item[1] as string);
-        }
-      });
-      if (before.length !== after.length) {
-        return {
-          error:
-            'Ambiguity prevents matching pseudonymous parts in disclosed VC to their original values',
-        };
-      }
-      before.forEach((orig, i) => {
-        deanonMap.set(after[i], orig);
       });
     } else if (typeof node === 'object' && node !== null) {
       for (const key in node) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, no-prototype-builtins
-        if (node.hasOwnProperty(key)) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, no-prototype-builtins
-          if (key === '__new') {
+        if (key === '@id') {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+          const oldAndNew = node[key];
+          if (
+            typeof oldAndNew === 'object' &&
+            '__old' in oldAndNew &&
+            '__new' in oldAndNew
+          ) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const masked = node['__new'] as string;
+            const masked = oldAndNew['__new'] as string;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const orig = node['__old'] as string;
-            deanonMap.set(masked, orig);
-          } else if (key === '@id__deleted' || key === 'id__deleted') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const value = node[key] as string;
-            if (value.startsWith(SKOLEM_PREFIX)) {
-              skolemIDMap.set(path, value);
-            } else {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-              const masked = nanoid();
-              deanonMap.set(masked, value);
-              skolemIDMap.set(path, masked);
-            }
+            const orig = oldAndNew['__old'] as string;
+            deanonMap.set(`_:${masked}`, `<${orig}>`);
+            maskedIDMap.set(path, `${SKOLEM_PREFIX}${masked}`);
           } else {
-            const updatedPath = path.concat([key]);
+            return {
+              error: 'json-diff error: __old or __new do not exist',
+            };
+          }
+        } else if (key === '@value') {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+          const oldAndNew = node[key];
+          if (
+            typeof oldAndNew === 'object' &&
+            '__old' in oldAndNew &&
+            '__new' in oldAndNew
+          ) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const result = _recurse(node[key], updatedPath);
+            const masked = oldAndNew['__new'] as string;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const orig = oldAndNew['__old'] as string;
+            deanonMap.set(`_:${masked}`, `"${orig}"`);
+            maskedLiteralMap.set(path, `${SKOLEM_PREFIX}${masked}`);
+          } else {
+            return {
+              error: 'json-diff error: __old or __new do not exist',
+            };
+          }
+        } else if (key === '@id__deleted') {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          const value = node[key] as string;
+          if (value.startsWith(SKOLEM_PREFIX)) {
+            skolemIDMap.set(path, value);
+          } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const masked = nanoid();
+            deanonMap.set(`_:${masked}`, `<${value}>`);
+            skolemIDMap.set(path, `${SKOLEM_PREFIX}${masked}`);
+          }
+        } else if (key.endsWith('__deleted')) {
+          continue;
+        } else {
+          const updatedPath = path.concat([key]);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+          const value = node[key];
+          if (typeof value === 'object') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const result = _recurse(value, updatedPath);
             if ('error' in result) {
               return { error: result.error };
             }
@@ -149,7 +209,7 @@ export const vcDiff = (
     return { error: result.error };
   }
 
-  return { deanonMap, skolemIDMap };
+  return { deanonMap, skolemIDMap, maskedIDMap, maskedLiteralMap };
 };
 
 const SKOLEM_PREFIX = 'urn:bnid:';
@@ -188,51 +248,6 @@ export const skolemizeJSONLD = (vc: jsonld.JsonLdDocument) => {
       if (!node.hasOwnProperty('id') && !node.hasOwnProperty('@id')) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         node['@id'] = `${SKOLEM_PREFIX}${nanoid()}`;
-      }
-    }
-  };
-
-  _recurse(output);
-
-  return output as jsonld.JsonLdDocument;
-};
-
-export const replaceMaskWithSkolemID = (
-  vc: jsonld.JsonLdDocument,
-  deanonMap: Map<string, string>,
-) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const output = JSON.parse(JSON.stringify(vc));
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const _replace = (item: any) =>
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
-    deanonMap.has(item) ? `${SKOLEM_PREFIX}${item}` : item;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const _recurse = (node: any) => {
-    if (Array.isArray(node)) {
-      node.forEach((item, i) => {
-        if (typeof item === 'object' && item !== null) {
-          _recurse(item);
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          node[i] = _replace(item);
-        }
-      });
-    } else if (typeof node === 'object' && node !== null) {
-      for (const key in node) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, no-prototype-builtins
-        if (node.hasOwnProperty(key)) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          if (typeof node[key] === 'object' && node[key] !== null) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            _recurse(node[key]);
-          } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-            node[key] = _replace(node[key]);
-          }
-        }
       }
     }
   };

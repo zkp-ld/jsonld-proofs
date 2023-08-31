@@ -1,9 +1,10 @@
 import * as jsonld from 'jsonld';
 import disclosed0 from '../example/disclosed0.json';
-import disclosed0HiddenLiteral from '../example/disclosed0_hidden_literal.json';
+import disclosed0HiddenLiteral from '../example/disclosed0_hidden_literals.json';
 import disclosed1 from '../example/disclosed1.json';
 import keypairs from '../example/keypairs.json';
 import vcDraft0 from '../example/vc0.json';
+import vc0HiddenLiteral from '../example/vc0_hidden_literals.json';
 import vcDraft1 from '../example/vc1.json';
 import vp from '../example/vp.json';
 import _vpContext from '../example/vpContext.json';
@@ -41,7 +42,7 @@ describe('Proofs', () => {
   });
 
   test('deriveProof and verifyProof with hidden literal', async () => {
-    const vc0 = await sign(vcDraft0, keypairs);
+    const vc0 = await sign(vc0HiddenLiteral, keypairs);
     const vc1 = await sign(vcDraft1, keypairs);
     const nonce = 'abcde';
     const vp = await deriveProof(
@@ -60,5 +61,4 @@ describe('Proofs', () => {
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
-
 });

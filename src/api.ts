@@ -12,11 +12,12 @@ import * as jsonld from 'jsonld';
 import {
   deskolemizeNQuads,
   jsonldToRDF,
-  replaceMaskWithSkolemID,
   vcToRDF,
   vcDiff,
   skolemizeJSONLD,
   jsonldVPFromRDF,
+  customLoader,
+  expandedVCToRDF,
 } from './utils';
 
 export interface VcWithDisclosed {
@@ -86,30 +87,35 @@ export const deriveProof = async (
   const documentLoaderRDF = await jsonldToRDF(documentLoader);
 
   for (const { vc, disclosed } of vcWithDisclosedPairs) {
-    // deep copy disclosed VC
-    const disclosedVC = JSON.parse(JSON.stringify(disclosed)) as Record<
-      string,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      any
-    >;
-
     // skolemize VC
     const skolemizedVC = skolemizeJSONLD(vc);
 
+    const expandedVC = await jsonld.expand(skolemizedVC, {
+      documentLoader: customLoader,
+    });
+    const expandedDisclosedVC = await jsonld.expand(disclosed, {
+      documentLoader: customLoader,
+    });
+
     // compare VC and disclosed VC to get local deanon map and skolem ID map
-    const vcDiffResult = vcDiff(skolemizedVC, disclosedVC);
+    const vcDiffResult = vcDiff(expandedVC, expandedDisclosedVC);
     if ('error' in vcDiffResult) {
       return { error: vcDiffResult.error };
     }
-    const { deanonMap: localDeanonMap, skolemIDMap } = vcDiffResult;
+    const {
+      deanonMap: localDeanonMap,
+      skolemIDMap,
+      maskedIDMap,
+      maskedLiteralMap,
+    } = vcDiffResult;
 
     // update global deanonMap
     for (const [k, v] of localDeanonMap.entries()) {
       if (deanonMap.has(k) && deanonMap.get(k) !== v) {
         return {
-          error: `pseudonym \`${k}\` corresponds to multiple values: \`${v}\` and \`${deanonMap.get(
-            k,
-          )}\``,
+          error: `pseudonym \`${k}\` corresponds to multiple values: \`${JSON.stringify(
+            v,
+          )}\` and \`${JSON.stringify(deanonMap.get(k))}\``,
         };
       }
       deanonMap.set(k, v);
@@ -117,7 +123,7 @@ export const deriveProof = async (
 
     // copy Skolem IDs from original VC to disclosed VC
     for (const [path, skolemID] of skolemIDMap) {
-      let node = disclosedVC;
+      let node = expandedDisclosedVC;
       for (const item of path) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         node = node[item];
@@ -125,21 +131,50 @@ export const deriveProof = async (
       node['@id'] = skolemID;
     }
 
-    // replace user-defined mask values with Skolem IDs like `urn:bnid:*`
-    const skolemizedDisclosedVC = replaceMaskWithSkolemID(
-      disclosedVC,
-      localDeanonMap,
-    );
+    // inject masked ID into disclosed VC
+    for (const [path, masked] of maskedIDMap) {
+      let node = expandedDisclosedVC;
+      for (const item of path) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        node = node[item];
+      }
+      node['@id'] = masked;
+    }
+
+    // inject masked Literal into disclosed VC
+    for (const [path, masked] of maskedLiteralMap) {
+      let node = expandedDisclosedVC;
+      for (const item of path) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        node = node[item];
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const typ = node['@type'];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const value = node['@value'];
+
+      node['@id'] = masked;
+      delete node['@type'];
+      delete node['@value'];
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const deanonMapEntry = deanonMap.get(`_:${value}`);
+      if (deanonMapEntry == undefined) {
+        return { error: `deanonMap[_:${value}] has no value` };
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
+      deanonMap.set(`_:${value}`, `${deanonMapEntry}^^<${typ}>`);
+    }
 
     // convert VC to N-Quads
-    const skolemizedRDF = await vcToRDF(skolemizedVC);
+    const skolemizedRDF = await expandedVCToRDF(expandedVC);
     if ('error' in skolemizedRDF) {
       return { error: skolemizedRDF.error };
     }
     const { documentRDF: skolemizedDocumentRDF, proofRDF: skolemizedProofRDF } =
       skolemizedRDF;
 
-    const skolemizedDisclosedRDF = await vcToRDF(skolemizedDisclosedVC);
+    const skolemizedDisclosedRDF = await expandedVCToRDF(expandedDisclosedVC);
     if ('error' in skolemizedDisclosedRDF) {
       return { error: skolemizedDisclosedRDF.error };
     }

@@ -23,13 +23,14 @@
   "scripts": {
     "build": "tsc --pretty",
     "test": "vitest",
+    "test:run": "vitest run",
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write --loglevel=warn 'src/**/*.{js,jsx,ts,tsx,html,json,gql,graphql}'",
     "fix": "npm run --silent format; npm run --silent lint:fix"
   },
   "dependencies": {
-    "@zkp-ld/rdf-proofs-wasm": "0.7.0",
+    "@zkp-ld/rdf-proofs-wasm": "0.8.0",
     "json-diff": "git+https://github.com/Sequoia/json-diff.git#6085db5",
     "jsonld": "^8.2.0",
     "nanoid": "^4.0.2"

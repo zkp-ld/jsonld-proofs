@@ -25,7 +25,9 @@
     "isPatientOf": {
       "type": "Vaccination",
       "vaccinationDate": "xdate",
-      "vaccine": "x3"
+      "vaccine": [
+        "x"
+      ]
     },
     "worksFor": {
       "name": "ABC Inc."
