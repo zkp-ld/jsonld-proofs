@@ -124,11 +124,11 @@ export const deriveProof = async (
     for (const [path, masked] of maskedLiteralMap) {
       const node = traverseJSON(expandedDisclosedVC as JsonValue, path);
 
-      const typ = node['@type'];
       const value = node['@value'];
-      if (typeof typ !== 'string' || typeof value !== 'string') {
-        throw new TypeError('invalid disclosed VC');
+      if (typeof value !== 'string') {
+        throw new TypeError('invalid disclosed VC'); // TODO: more detail message
       }
+      const typ = node['@type'];
 
       node['@id'] = masked;
       delete node['@type'];
@@ -138,7 +138,14 @@ export const deriveProof = async (
       if (deanonMapEntry == undefined) {
         throw new Error(`deanonMap[_:${value}] has no value`);
       }
-      deanonMap.set(`_:${value}`, `${deanonMapEntry}^^<${typ}>`);
+
+      if (typeof typ == 'string') {
+        deanonMap.set(`_:${value}`, `${deanonMapEntry}^^<${typ}>`);
+      } else if (typ === undefined) {
+        deanonMap.set(`_:${value}`, `${deanonMapEntry}`);
+      } else {
+        throw new TypeError('invalid disclosed VC'); // TODO: more detail message
+      }
     }
 
     // convert VC to N-Quads
