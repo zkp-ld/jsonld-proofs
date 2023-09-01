@@ -30,7 +30,7 @@
     "fix": "npm run --silent format; npm run --silent lint:fix"
   },
   "dependencies": {
-    "@zkp-ld/rdf-proofs-wasm": "0.8.0",
+    "@zkp-ld/rdf-proofs-wasm": "0.9.0",
     "json-diff": "git+https://github.com/Sequoia/json-diff.git#6085db5",
     "jsonld": "^8.2.0",
     "nanoid": "^4.0.2"
