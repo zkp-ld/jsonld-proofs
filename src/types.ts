@@ -7,8 +7,8 @@ export interface VC extends VCDocument {
   proof: VCProof;
 }
 
-export interface VcWithDisclosed {
-  readonly vc: VC;
+export interface VcPair {
+  readonly original: VC;
   readonly disclosed: VC;
 }
 

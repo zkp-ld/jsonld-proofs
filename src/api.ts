@@ -9,7 +9,7 @@ import {
   KeyPair,
 } from '@zkp-ld/rdf-proofs-wasm';
 import * as jsonld from 'jsonld';
-import { JsonValue, VC, VcWithDisclosed } from './types';
+import { JsonValue, VC, VcPair } from './types';
 import {
   deskolemizeNQuads,
   jsonldToRDF,
@@ -66,19 +66,19 @@ export const verify = async (
 };
 
 export const deriveProof = async (
-  vcWithDisclosedPairs: VcWithDisclosed[],
+  vcPairs: VcPair[],
   nonce: string,
   publicKeys: jsonld.JsonLdDocument,
   context: jsonld.ContextDefinition,
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
-  const vcPairs = [];
+  const vcPairsRDF = [];
   const deanonMap = new Map<string, string>();
   const publicKeysRDF = await jsonldToRDF(publicKeys);
 
-  for (const { vc, disclosed } of vcWithDisclosedPairs) {
-    const skolemizedVC = skolemizeVC(vc);
+  for (const { original, disclosed } of vcPairs) {
+    const skolemizedVC = skolemizeVC(original);
 
     const expandedVC = await jsonld.expand(skolemizedVC, {
       documentLoader: customLoader,
@@ -159,23 +159,28 @@ export const deriveProof = async (
     } = await expandedVCToRDF(expandedDisclosedVC);
 
     // deskolemize N-Quads
-    const [documentRDF, proofRDF, disclosedDocumentRDF, disclosedProofRDF] = [
+    const [
+      originalDocumentRDF,
+      originalProofRDF,
+      disclosedDocumentRDF,
+      disclosedProofRDF,
+    ] = [
       skolemizedDocumentRDF,
       skolemizedProofRDF,
       skolemizedDisclosedDocumentRDF,
       skolemizedDisclosedProofRDF,
     ].map(deskolemizeNQuads);
 
-    vcPairs.push({
-      originalDocument: documentRDF,
-      originalProof: proofRDF,
+    vcPairsRDF.push({
+      originalDocument: originalDocumentRDF,
+      originalProof: originalProofRDF,
       disclosedDocument: disclosedDocumentRDF,
       disclosedProof: disclosedProofRDF,
     });
   }
 
   const vp = deriveProofWasm({
-    vcPairs,
+    vcPairs: vcPairsRDF,
     deanonMap,
     nonce,
     keyGraph: publicKeysRDF,

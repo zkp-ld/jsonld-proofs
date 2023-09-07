@@ -21,8 +21,8 @@ describe('Proofs', () => {
     const nonce = 'abcde';
     const vp = await deriveProof(
       [
-        { vc: vc0, disclosed: disclosed0 },
-        { vc: vc1, disclosed: disclosed1 },
+        { original: vc0, disclosed: disclosed0 },
+        { original: vc1, disclosed: disclosed1 },
       ],
       nonce,
       keypairs,
@@ -49,8 +49,8 @@ describe('Proofs', () => {
     const nonce = 'abcde';
     const vp = await deriveProof(
       [
-        { vc: vc0, disclosed: disclosed0HiddenLiteral },
-        { vc: vc1, disclosed: disclosed1 },
+        { original: vc0, disclosed: disclosed0HiddenLiteral },
+        { original: vc1, disclosed: disclosed1 },
       ],
       nonce,
       keypairs,
@@ -68,7 +68,7 @@ describe('Proofs', () => {
     const vc2 = await sign(vcDraft2, keypairs);
     const nonce = 'abcde';
     const vp = await deriveProof(
-      [{ vc: vc2, disclosed: disclosed2 }],
+      [{ original: vc2, disclosed: disclosed2 }],
       nonce,
       keypairs,
       vpContext,
