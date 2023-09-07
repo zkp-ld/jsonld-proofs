@@ -73,7 +73,7 @@ export const deriveProof = async (
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
-  const vcWithDisclosed = [];
+  const vcPairs = [];
   const deanonMap = new Map<string, string>();
   const publicKeysRDF = await jsonldToRDF(publicKeys);
 
@@ -166,19 +166,19 @@ export const deriveProof = async (
       skolemizedDisclosedProofRDF,
     ].map(deskolemizeNQuads);
 
-    vcWithDisclosed.push({
-      vcDocument: documentRDF,
-      vcProof: proofRDF,
+    vcPairs.push({
+      originalDocument: documentRDF,
+      originalProof: proofRDF,
       disclosedDocument: disclosedDocumentRDF,
       disclosedProof: disclosedProofRDF,
     });
   }
 
   const vp = deriveProofWasm({
-    vcWithDisclosed,
+    vcPairs,
     deanonMap,
     nonce,
-    documentLoader: publicKeysRDF,
+    keyGraph: publicKeysRDF,
   });
 
   const jsonldVP = jsonldVPFromRDF(vp, context);
