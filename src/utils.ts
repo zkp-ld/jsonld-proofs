@@ -1,44 +1,24 @@
 import { diff } from 'json-diff';
 import * as jsonld from 'jsonld';
-import { Url, RemoteDocument } from 'jsonld/jsonld-spec';
 import { customAlphabet } from 'nanoid';
-import { CONTEXTS, DATA_INTEGRITY_CONTEXT } from './contexts';
-import { JsonValue, VC, VCDocument } from './types';
+import { DocumentLoader, JsonValue, VC, VCDocument } from './types';
 
 const PROOF = 'https://w3id.org/security#proof';
+const DATA_INTEGRITY_CONTEXT = 'https://w3id.org/security/data-integrity/v1';
+
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10);
 
-export const customLoader = async (
-  url: Url,
-  _callback: (err: Error, remoteDoc: RemoteDocument) => void,
-  // eslint-disable-next-line @typescript-eslint/require-await
-): Promise<RemoteDocument> => {
-  if (url in CONTEXTS) {
-    return {
-      contextUrl: undefined, // this is for a context via a link header
-      documentUrl: url, // this is the actual context URL after redirects
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      document: CONTEXTS[url], // this is the actual document that was loaded
-    } as RemoteDocument;
-  }
-
-  // call the default documentLoader
-  //return nodeDocumentLoader(url);
-  return {
-    contextUrl: undefined,
-    documentUrl: url,
-    document: {},
-  } as RemoteDocument;
-};
-
-export const jsonldToRDF = async (jsonldDoc: jsonld.JsonLdDocument) =>
+export const jsonldToRDF = async (
+  jsonldDoc: jsonld.JsonLdDocument,
+  documentLoader?: DocumentLoader,
+) =>
   (await jsonld.toRDF(jsonldDoc, {
     format: 'application/n-quads',
-    documentLoader: customLoader,
+    documentLoader,
     safe: true,
   })) as unknown as string;
 
-export const vcToRDF = async (vc: VC) => {
+export const vcToRDF = async (vc: VC, documentLoader?: DocumentLoader) => {
   const clonedVC = JSON.parse(JSON.stringify(vc)) as VC;
 
   const proof = clonedVC.proof;
@@ -49,13 +29,16 @@ export const vcToRDF = async (vc: VC) => {
     proof['@context'] = DATA_INTEGRITY_CONTEXT;
   }
 
-  const documentRDF = await jsonldToRDF(document);
-  const proofRDF = await jsonldToRDF(proof);
+  const documentRDF = await jsonldToRDF(document, documentLoader);
+  const proofRDF = await jsonldToRDF(proof, documentLoader);
 
   return { document, documentRDF, proof, proofRDF };
 };
 
-export const expandedVCToRDF = async (vc: jsonld.NodeObject[]) => {
+export const expandedVCToRDF = async (
+  vc: jsonld.NodeObject[],
+  documentLoader?: DocumentLoader,
+) => {
   const clonedVC = JSON.parse(JSON.stringify(vc)) as jsonld.NodeObject[];
 
   if (
@@ -80,8 +63,8 @@ export const expandedVCToRDF = async (vc: jsonld.NodeObject[]) => {
   }
   delete clonedVC[0][PROOF];
 
-  const documentRDF = await jsonldToRDF(clonedVC);
-  const proofRDF = await jsonldToRDF(proof);
+  const documentRDF = await jsonldToRDF(clonedVC, documentLoader);
+  const proofRDF = await jsonldToRDF(proof, documentLoader);
 
   return { documentRDF, proofRDF };
 };
@@ -244,6 +227,7 @@ export const deskolemizeNQuads = (nquads: string) =>
 export const jsonldVPFromRDF = async (
   vpRDF: string,
   context: jsonld.ContextDefinition,
+  documentLoader?: DocumentLoader,
 ) => {
   const vp_frame: jsonld.JsonLdDocument = {
     type: 'VerifiablePresentation',
@@ -263,7 +247,7 @@ export const jsonldVPFromRDF = async (
   });
 
   const out = await jsonld.frame(expandedJsonld, vp_frame, {
-    documentLoader: customLoader,
+    documentLoader,
     safe: true,
   });
 

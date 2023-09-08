@@ -9,14 +9,13 @@ import {
   KeyPair,
 } from '@zkp-ld/rdf-proofs-wasm';
 import * as jsonld from 'jsonld';
-import { JsonValue, VC, VcPair } from './types';
+import { DocumentLoader, JsonValue, VC, VcPair } from './types';
 import {
   deskolemizeNQuads,
   jsonldToRDF,
   diffVC,
   skolemizeVC,
   jsonldVPFromRDF,
-  customLoader,
   expandedVCToRDF,
   vcToRDF,
   traverseJSON,
@@ -33,13 +32,14 @@ export const keyGen = async (): Promise<KeyPair> => {
 export const sign = async (
   vc: VC,
   keyPair: jsonld.JsonLdDocument,
+  documentLoader?: DocumentLoader,
 ): Promise<VC> => {
   await initializeWasm();
 
-  const vcRDF = await vcToRDF(vc);
+  const vcRDF = await vcToRDF(vc, documentLoader);
   const { document, proof, documentRDF, proofRDF } = vcRDF;
 
-  const keyPairRDF = await jsonldToRDF(keyPair);
+  const keyPairRDF = await jsonldToRDF(keyPair, documentLoader);
 
   const signature = signWasm(documentRDF, proofRDF, keyPairRDF);
 
@@ -52,13 +52,14 @@ export const sign = async (
 export const verify = async (
   vc: VC,
   publicKey: jsonld.JsonLdDocument,
+  documentLoader?: DocumentLoader,
 ): Promise<VerifyResult> => {
   await initializeWasm();
 
-  const vcRDF = await vcToRDF(vc);
+  const vcRDF = await vcToRDF(vc, documentLoader);
   const { documentRDF, proofRDF } = vcRDF;
 
-  const publicKeyRDF = await jsonldToRDF(publicKey);
+  const publicKeyRDF = await jsonldToRDF(publicKey, documentLoader);
 
   const verified = verifyWasm(documentRDF, proofRDF, publicKeyRDF);
 
@@ -70,22 +71,23 @@ export const deriveProof = async (
   nonce: string,
   publicKeys: jsonld.JsonLdDocument,
   context: jsonld.ContextDefinition,
+  documentLoader?: DocumentLoader,
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
   const vcPairsRDF = [];
   const deanonMap = new Map<string, string>();
-  const publicKeysRDF = await jsonldToRDF(publicKeys);
+  const publicKeysRDF = await jsonldToRDF(publicKeys, documentLoader);
 
   for (const { original, disclosed } of vcPairs) {
     const skolemizedVC = skolemizeVC(original);
 
     const expandedVC = await jsonld.expand(skolemizedVC, {
-      documentLoader: customLoader,
+      documentLoader,
       safe: true,
     });
     const expandedDisclosedVC = await jsonld.expand(disclosed, {
-      documentLoader: customLoader,
+      documentLoader,
       safe: true,
     });
 
@@ -157,13 +159,13 @@ export const deriveProof = async (
 
     // convert VC to N-Quads
     const { documentRDF: skolemizedDocumentRDF, proofRDF: skolemizedProofRDF } =
-      await expandedVCToRDF(expandedVC);
+      await expandedVCToRDF(expandedVC, documentLoader);
 
     // convert disclosed VC to N-Quads
     const {
       documentRDF: skolemizedDisclosedDocumentRDF,
       proofRDF: skolemizedDisclosedProofRDF,
-    } = await expandedVCToRDF(expandedDisclosedVC);
+    } = await expandedVCToRDF(expandedDisclosedVC, documentLoader);
 
     // deskolemize N-Quads
     const [
@@ -193,7 +195,7 @@ export const deriveProof = async (
     keyGraph: publicKeysRDF,
   });
 
-  const jsonldVP = jsonldVPFromRDF(vp, context);
+  const jsonldVP = jsonldVPFromRDF(vp, context, documentLoader);
 
   return jsonldVP;
 };
@@ -201,14 +203,15 @@ export const deriveProof = async (
 export const verifyProof = async (
   vp: jsonld.JsonLdDocument,
   nonce: string,
-  documentLoader: jsonld.JsonLdDocument,
+  publicKeys: jsonld.JsonLdDocument,
+  documentLoader?: DocumentLoader,
 ): Promise<VerifyResult> => {
   await initializeWasm();
 
-  const vpRDF = await jsonldToRDF(vp);
-  const documentLoaderRDF = await jsonldToRDF(documentLoader);
+  const vpRDF = await jsonldToRDF(vp, documentLoader);
+  const publicKeysRDF = await jsonldToRDF(publicKeys, documentLoader);
 
-  const verified = verifyProofWasm(vpRDF, nonce, documentLoaderRDF);
+  const verified = verifyProofWasm(vpRDF, nonce, publicKeysRDF);
 
   return verified;
 };
