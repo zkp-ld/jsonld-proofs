@@ -35,6 +35,7 @@ export const jsonldToRDF = async (jsonldDoc: jsonld.JsonLdDocument) =>
   (await jsonld.toRDF(jsonldDoc, {
     format: 'application/n-quads',
     documentLoader: customLoader,
+    safe: true,
   })) as unknown as string;
 
 export const vcToRDF = async (vc: VC) => {
@@ -121,10 +122,14 @@ const _diffJSONLD = (
           '__old' in oldAndNew &&
           '__new' in oldAndNew
         ) {
-          const masked = oldAndNew['__new'] as string;
           const orig = oldAndNew['__old'] as string;
-          deanonMap.set(`_:${masked}`, `<${orig}>`);
+          let masked = oldAndNew['__new'] as string;
+          // remove prefix `_:` if exist
+          if (masked.startsWith('_:')) {
+            masked = masked.substring(2);
+          }
           maskedIDMap.set(path, `${SKOLEM_PREFIX}${masked}`);
+          deanonMap.set(`_:${masked}`, `<${orig}>`);
         } else {
           throw new TypeError('json-diff error: __old or __new do not exist');
         }
@@ -136,10 +141,14 @@ const _diffJSONLD = (
           '__old' in oldAndNew &&
           '__new' in oldAndNew
         ) {
-          const masked = oldAndNew['__new'] as string;
           const orig = oldAndNew['__old'] as string;
-          deanonMap.set(`_:${masked}`, `"${orig}"`);
+          let masked = oldAndNew['__new'] as string;
+          // remove prefix `_:` if exist
+          if (masked.startsWith('_:')) {
+            masked = masked.substring(2);
+          }
           maskedLiteralMap.set(path, `${SKOLEM_PREFIX}${masked}`);
+          deanonMap.set(`_:${masked}`, `"${orig}"`);
         } else {
           throw new TypeError('json-diff error: __old or __new do not exist');
         }
@@ -149,8 +158,8 @@ const _diffJSONLD = (
           skolemIDMap.set(path, value);
         } else {
           const masked = nanoid();
-          deanonMap.set(`_:${masked}`, `<${value}>`);
           skolemIDMap.set(path, `${SKOLEM_PREFIX}${masked}`);
+          deanonMap.set(`_:${masked}`, `<${value}>`);
         }
       } else if (key.endsWith('__deleted')) {
         continue;
@@ -250,9 +259,13 @@ export const jsonldVPFromRDF = async (
   const vpRDFObj = vpRDF as unknown as object;
   const expandedJsonld = await jsonld.fromRDF(vpRDFObj, {
     format: 'application/n-quads',
+    safe: true,
   });
 
-  const out = await jsonld.frame(expandedJsonld, vp_frame);
+  const out = await jsonld.frame(expandedJsonld, vp_frame, {
+    documentLoader: customLoader,
+    safe: true,
+  });
 
   return out;
 };

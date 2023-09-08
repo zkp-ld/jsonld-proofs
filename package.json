@@ -38,7 +38,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.3",
     "@types/json-diff": "^1.0.0",
-    "@types/jsonld": "^1.5.9",
+    "@types/jsonld": "./@types/jsonld",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "eslint": "^8.47.0",
     "eslint-config-prettier": "^9.0.0",

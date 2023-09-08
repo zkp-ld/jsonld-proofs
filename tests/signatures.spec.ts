@@ -33,7 +33,7 @@ describe('Signatures', () => {
 
   test('empty keypairs', async () => {
     await expect(sign(vcDraft0, {})).rejects.toThrowError(
-      'RDFProofsError(InvalidVerificationMethod)',
+      'Safe mode validation error.',
     );
   });
 

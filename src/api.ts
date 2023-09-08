@@ -82,9 +82,11 @@ export const deriveProof = async (
 
     const expandedVC = await jsonld.expand(skolemizedVC, {
       documentLoader: customLoader,
+      safe: true,
     });
     const expandedDisclosedVC = await jsonld.expand(disclosed, {
       documentLoader: customLoader,
+      safe: true,
     });
 
     // compare VC and disclosed VC to get local deanon map and skolem ID map
@@ -124,25 +126,30 @@ export const deriveProof = async (
     for (const [path, masked] of maskedLiteralMap) {
       const node = traverseJSON(expandedDisclosedVC as JsonValue, path);
 
-      const value = node['@value'];
+      let value = node['@value'];
       if (typeof value !== 'string') {
         throw new TypeError('invalid disclosed VC'); // TODO: more detail message
       }
+      // add prefix `_:` if not exist
+      if (!value.startsWith('_:')) {
+        value = `_:${value}`;
+      }
+
       const typ = node['@type'];
 
       node['@id'] = masked;
       delete node['@type'];
       delete node['@value'];
 
-      const deanonMapEntry = deanonMap.get(`_:${value}`);
+      const deanonMapEntry = deanonMap.get(value);
       if (deanonMapEntry == undefined) {
-        throw new Error(`deanonMap[_:${value}] has no value`);
+        throw new Error(`deanonMap[${value}] has no value`);
       }
 
       if (typeof typ == 'string') {
-        deanonMap.set(`_:${value}`, `${deanonMapEntry}^^<${typ}>`);
+        deanonMap.set(value, `${deanonMapEntry}^^<${typ}>`);
       } else if (typ === undefined) {
-        deanonMap.set(`_:${value}`, `${deanonMapEntry}`);
+        deanonMap.set(value, `${deanonMapEntry}`);
       } else {
         throw new TypeError('invalid disclosed VC'); // TODO: more detail message
       }

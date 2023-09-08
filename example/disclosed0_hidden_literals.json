@@ -24,9 +24,9 @@
     "type": "Person",
     "isPatientOf": {
       "type": "Vaccination",
-      "vaccinationDate": "xdate",
+      "vaccinationDate": "_:xdate",
       "vaccine": [
-        "x"
+        "_:x"
       ]
     },
     "worksFor": {

@@ -21,7 +21,7 @@
   ],
   "type": "VerifiableCredential",
   "credentialSubject": {
-    "id": "x",
+    "id": "_:x",
     "type": "Vaccine",
     "status": "active"
   },
