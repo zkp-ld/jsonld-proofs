@@ -10,7 +10,7 @@ const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10);
 
 export const jsonldToRDF = async (
   jsonldDoc: jsonld.JsonLdDocument,
-  documentLoader?: DocumentLoader,
+  documentLoader: DocumentLoader,
 ) =>
   (await jsonld.toRDF(jsonldDoc, {
     format: 'application/n-quads',
@@ -18,7 +18,7 @@ export const jsonldToRDF = async (
     safe: true,
   })) as unknown as string;
 
-export const vcToRDF = async (vc: VC, documentLoader?: DocumentLoader) => {
+export const vcToRDF = async (vc: VC, documentLoader: DocumentLoader) => {
   const clonedVC = JSON.parse(JSON.stringify(vc)) as VC;
 
   const proof = clonedVC.proof;
@@ -37,7 +37,7 @@ export const vcToRDF = async (vc: VC, documentLoader?: DocumentLoader) => {
 
 export const expandedVCToRDF = async (
   vc: jsonld.NodeObject[],
-  documentLoader?: DocumentLoader,
+  documentLoader: DocumentLoader,
 ) => {
   const clonedVC = JSON.parse(JSON.stringify(vc)) as jsonld.NodeObject[];
 
@@ -227,7 +227,7 @@ export const deskolemizeNQuads = (nquads: string) =>
 export const jsonldVPFromRDF = async (
   vpRDF: string,
   context: jsonld.ContextDefinition,
-  documentLoader?: DocumentLoader,
+  documentLoader: DocumentLoader,
 ) => {
   const vp_frame: jsonld.JsonLdDocument = {
     type: 'VerifiablePresentation',

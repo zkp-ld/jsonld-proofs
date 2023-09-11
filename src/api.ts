@@ -32,7 +32,7 @@ export const keyGen = async (): Promise<KeyPair> => {
 export const sign = async (
   vc: VC,
   keyPair: jsonld.JsonLdDocument,
-  documentLoader?: DocumentLoader,
+  documentLoader: DocumentLoader,
 ): Promise<VC> => {
   await initializeWasm();
 
@@ -52,7 +52,7 @@ export const sign = async (
 export const verify = async (
   vc: VC,
   publicKey: jsonld.JsonLdDocument,
-  documentLoader?: DocumentLoader,
+  documentLoader: DocumentLoader,
 ): Promise<VerifyResult> => {
   await initializeWasm();
 
@@ -71,7 +71,7 @@ export const deriveProof = async (
   nonce: string,
   publicKeys: jsonld.JsonLdDocument,
   context: jsonld.ContextDefinition,
-  documentLoader?: DocumentLoader,
+  documentLoader: DocumentLoader,
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
@@ -204,7 +204,7 @@ export const verifyProof = async (
   vp: jsonld.JsonLdDocument,
   nonce: string,
   publicKeys: jsonld.JsonLdDocument,
-  documentLoader?: DocumentLoader,
+  documentLoader: DocumentLoader,
 ): Promise<VerifyResult> => {
   await initializeWasm();
 
