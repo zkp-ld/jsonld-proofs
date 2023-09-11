@@ -16,6 +16,14 @@ type MimeNQuad = 'application/n-quads';
 type RdfDataSet = object;  // Placeholder
 type Callback<T> = (err: Error, res: T) => void;
 
+/**
+ * Document loaders.
+ */
+export namespace documentLoaders {
+  let node: DocLoader;
+  let xhr: DocLoader;
+}
+
 /*
  * Declares interfaces used to type the methods options object.
  * The interfaces are usefull to avoid code replication.
