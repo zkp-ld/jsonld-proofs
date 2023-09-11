@@ -4,7 +4,7 @@ import { customAlphabet } from 'nanoid';
 import { DocumentLoader, JsonValue, VC, VCDocument } from './types';
 
 const PROOF = 'https://w3id.org/security#proof';
-const DATA_INTEGRITY_CONTEXT = 'https://w3id.org/security/data-integrity/v1';
+const DATA_INTEGRITY_CONTEXT = 'https://www.w3.org/ns/data-integrity/v1';
 
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10);
 
