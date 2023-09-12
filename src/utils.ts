@@ -1,5 +1,6 @@
 import { diff } from 'json-diff';
 import * as jsonld from 'jsonld';
+import * as jsonldSpec from 'jsonld/jsonld-spec';
 import { customAlphabet } from 'nanoid';
 import { DocumentLoader, JsonValue, VC, VCDocument } from './types';
 
@@ -208,17 +209,17 @@ const _skolemizeJSONLD = (node: JsonValue) => {
         _skolemizeJSONLD(node[key]);
       }
     }
-    if (!('id' in node || '@id' in node)) {
+    if (!('@value' in node || '@id' in node)) {
       node['@id'] = `${SKOLEM_PREFIX}${nanoid()}`;
     }
   }
 };
 
-export const skolemizeVC = (vc: VC) => {
-  const output = JSON.parse(JSON.stringify(vc)) as VC;
-  _skolemizeJSONLD(output as JsonValue);
+export const skolemizeVC = (vc: jsonldSpec.JsonLdArray) => {
+  const output = JSON.parse(JSON.stringify(vc)) as JsonValue;
+  _skolemizeJSONLD(output);
 
-  return output;
+  return output as jsonldSpec.JsonLdArray;
 };
 
 export const deskolemizeNQuads = (nquads: string) =>

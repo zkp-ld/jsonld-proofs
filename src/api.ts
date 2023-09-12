@@ -14,11 +14,11 @@ import {
   deskolemizeNQuads,
   jsonldToRDF,
   diffVC,
-  skolemizeVC,
   jsonldVPFromRDF,
   expandedVCToRDF,
   vcToRDF,
   traverseJSON,
+  skolemizeVC,
 } from './utils';
 
 export const keyGen = async (): Promise<KeyPair> => {
@@ -80,9 +80,7 @@ export const deriveProof = async (
   const publicKeysRDF = await jsonldToRDF(publicKeys, documentLoader);
 
   for (const { original, disclosed } of vcPairs) {
-    const skolemizedVC = skolemizeVC(original);
-
-    const expandedVC = await jsonld.expand(skolemizedVC, {
+    const expandedOriginalVC = await jsonld.expand(original, {
       documentLoader,
       safe: true,
     });
@@ -91,8 +89,13 @@ export const deriveProof = async (
       safe: true,
     });
 
+    const skolemizedExpandedOriginalVC = skolemizeVC(expandedOriginalVC);
+
     // compare VC and disclosed VC to get local deanon map and skolem ID map
-    const vcDiffResult = diffVC(expandedVC, expandedDisclosedVC);
+    const vcDiffResult = diffVC(
+      skolemizedExpandedOriginalVC,
+      expandedDisclosedVC,
+    );
     const {
       deanonMap: localDeanonMap,
       skolemIDMap,
@@ -159,7 +162,7 @@ export const deriveProof = async (
 
     // convert VC to N-Quads
     const { documentRDF: skolemizedDocumentRDF, proofRDF: skolemizedProofRDF } =
-      await expandedVCToRDF(expandedVC, documentLoader);
+      await expandedVCToRDF(skolemizedExpandedOriginalVC, documentLoader);
 
     // convert disclosed VC to N-Quads
     const {
