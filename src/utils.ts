@@ -107,13 +107,14 @@ const _diffJSONLD = (
           '__new' in oldAndNew
         ) {
           const orig = oldAndNew['__old'] as string;
-          let masked = oldAndNew['__new'] as string;
-          // remove prefix `_:` if exist
-          if (masked.startsWith('_:')) {
-            masked = masked.substring(2);
+          const masked = oldAndNew['__new'] as string;
+          if (!masked.startsWith('_:')) {
+            throw new TypeError(
+              `json-diff error: replacement value \`${masked}\` must start with \`_:\``,
+            );
           }
-          maskedIDMap.set(path, `${SKOLEM_PREFIX}${masked}`);
-          deanonMap.set(`_:${masked}`, `<${orig}>`);
+          maskedIDMap.set(path, `${SKOLEM_PREFIX}${masked.substring(2)}`);
+          deanonMap.set(masked, `<${orig}>`);
         } else {
           throw new TypeError('json-diff error: __old or __new do not exist');
         }
@@ -126,13 +127,14 @@ const _diffJSONLD = (
           '__new' in oldAndNew
         ) {
           const orig = oldAndNew['__old'] as string;
-          let masked = oldAndNew['__new'] as string;
-          // remove prefix `_:` if exist
-          if (masked.startsWith('_:')) {
-            masked = masked.substring(2);
+          const masked = oldAndNew['__new'] as string;
+          if (!masked.startsWith('_:')) {
+            throw new TypeError(
+              `json-diff error: replacement value \`${masked}\` must start with \`_:\``,
+            );
           }
-          maskedLiteralMap.set(path, `${SKOLEM_PREFIX}${masked}`);
-          deanonMap.set(`_:${masked}`, `"${orig}"`);
+          maskedLiteralMap.set(path, `${SKOLEM_PREFIX}${masked.substring(2)}`);
+          deanonMap.set(masked, `"${orig}"`);
         } else {
           throw new TypeError('json-diff error: __old or __new do not exist');
         }
