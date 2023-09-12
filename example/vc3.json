@@ -1,0 +1,64 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://www.w3.org/ns/data-integrity/v1",
+    "https://zkp-ld.org/bbs-termwise-2021.jsonld",
+    "https://www.w3.org/2022/wot/td/v1.1"
+  ],
+  "id": "http://example.org/credentials/1/1",
+  "type": "VerifiableCredential",
+  "issuer": "did:example:issuer2",
+  "issuanceDate": "2023-07-07T00:00:00Z",
+  "expirationDate": "2026-07-07T00:00:00Z",
+  "credentialSubject": {
+    "id": "urn:uuid:0804d572-cce8-422a-bb7c-4412fcd56f06",
+    "title": "MyLampThing",
+    "securityDefinitions": {
+      "https://mylamp.example.com/basic_sc": {
+        "scheme": "basic",
+        "in": "header"
+      }
+    },
+    "security": "basic_sc",
+    "properties": {
+      "status": {
+        "type": "string",
+        "forms": [
+          {
+            "href": "https://mylamp.example.com/status"
+          }
+        ]
+      }
+    },
+    "actions": {
+      "toggle": {
+        "forms": [
+          {
+            "href": "https://mylamp.example.com/toggle"
+          }
+        ]
+      }
+    },
+    "events": {
+      "overheating": {
+        "data": {
+          "type": "string"
+        },
+        "forms": [
+          {
+            "href": "https://mylamp.example.com/oh",
+            "subprotocol": "longpoll"
+          }
+        ]
+      }
+    }
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2023-07-07T00:00:00Z",
+    "cryptosuite": "bbs-termwise-signature-2023",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:example:issuer2#bls12_381-g2-pub001",
+    "@context": "https://www.w3.org/ns/data-integrity/v1"
+  }
+}

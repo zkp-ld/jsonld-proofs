@@ -1,44 +1,23 @@
 import * as jsonld from 'jsonld';
-import { RemoteDocument, Url } from 'jsonld/jsonld-spec';
-
 import disclosed0 from '../example/disclosed0.json';
 import disclosed0HiddenLiteral from '../example/disclosed0_hidden_literals.json';
 import disclosed1 from '../example/disclosed1.json';
 import disclosed2 from '../example/disclosed2.json';
+import disclosed3 from '../example/disclosed3.json';
 import keypairs from '../example/keypairs.json';
 import vcDraft0 from '../example/vc0.json';
 import vc0HiddenLiteral from '../example/vc0_hidden_literals.json';
 import vcDraft1 from '../example/vc1.json';
 import vcDraft2 from '../example/vc2.json';
+import vcDraft3 from '../example/vc3.json';
 import vp from '../example/vp.json';
 import _vpContext from '../example/vpContext.json';
+import _vpContext3 from '../example/vpContext3.json';
 import { sign, deriveProof, verifyProof } from '../src/api';
-import { CONTEXTS } from './contexts';
+import { localDocumentLoader, remoteDocumentLoader } from './document_loader';
 
 const vpContext = _vpContext as unknown as jsonld.ContextDefinition;
-
-const localDocumentLoader = async (
-  url: Url,
-  _callback: (err: Error, remoteDoc: RemoteDocument) => void,
-  // eslint-disable-next-line @typescript-eslint/require-await
-): Promise<RemoteDocument> => {
-  if (url in CONTEXTS) {
-    return {
-      contextUrl: undefined, // this is for a context via a link header
-      documentUrl: url, // this is the actual context URL after redirects
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      document: CONTEXTS[url], // this is the actual document that was loaded
-    } as RemoteDocument;
-  }
-
-  // call the default documentLoader
-  //return nodeDocumentLoader(url);
-  return {
-    contextUrl: undefined,
-    documentUrl: url,
-    document: {},
-  } as RemoteDocument;
-};
+const vpContext3 = _vpContext3 as unknown as jsonld.ContextDefinition;
 
 describe('Proofs', () => {
   test('deriveProof and verifyProof', async () => {
@@ -63,6 +42,29 @@ describe('Proofs', () => {
       nonce,
       keypairs,
       localDocumentLoader,
+    );
+    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
+    expect(verified.verified).toBeTruthy();
+  });
+
+  test('deriveProof and verifyProof with remote context', async () => {
+    const vc3 = await sign(vcDraft3, keypairs, remoteDocumentLoader);
+    const nonce = 'abcde';
+    const vp = await deriveProof(
+      [{ original: vc3, disclosed: disclosed3 }],
+      nonce,
+      keypairs,
+      vpContext3,
+      remoteDocumentLoader,
+    );
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
+    expect(vp).not.toHaveProperty('error');
+
+    const verified = await verifyProof(
+      vp,
+      nonce,
+      keypairs,
+      remoteDocumentLoader,
     );
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
