@@ -14,7 +14,7 @@ import vp from '../example/vp.json';
 import _vpContext from '../example/vpContext.json';
 import _vpContext3 from '../example/vpContext3.json';
 import { sign, deriveProof, verifyProof } from '../src/api';
-import { localDocumentLoader, remoteDocumentLoader } from './document_loader';
+import { localDocumentLoader, remoteDocumentLoader } from './documentLoader';
 
 const vpContext = _vpContext as unknown as jsonld.ContextDefinition;
 const vpContext3 = _vpContext3 as unknown as jsonld.ContextDefinition;

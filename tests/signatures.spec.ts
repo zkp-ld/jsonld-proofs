@@ -4,7 +4,7 @@ import vcDraft1 from '../example/vc1.json';
 import vcDraft3 from '../example/vc3.json';
 import { sign, verify, keyGen } from '../src/api';
 import { VC } from '../src/types';
-import { localDocumentLoader, remoteDocumentLoader } from './document_loader';
+import { localDocumentLoader, remoteDocumentLoader } from './documentLoader';
 
 describe('Signatures', () => {
   test('keyGen', async () => {
