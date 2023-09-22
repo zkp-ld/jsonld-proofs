@@ -84,7 +84,8 @@ export const blindSignRequest = async (
 };
 
 export const blindSign = async (
-  request: string,
+  commitment: string,
+  pokForCommitment: string,
   nonce: string,
   vc: VC,
   keyPair: jsonld.JsonLdDocument,
@@ -98,7 +99,8 @@ export const blindSign = async (
   const keyPairRDF = await jsonldToRDF(keyPair, documentLoader);
 
   const signedProofRDF = blindSignWasm(
-    request,
+    commitment,
+    pokForCommitment,
     nonce,
     documentRDF,
     proofRDF,
