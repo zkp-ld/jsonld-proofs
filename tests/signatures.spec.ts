@@ -1,5 +1,6 @@
 import keypairs from '../example/keypairs.json';
 import vcDraft0 from '../example/vc0.json';
+import vcDraft0WithMinimumProofConfig from '../example/vc0_with_minimum_proof_config.json';
 import vcDraft1 from '../example/vc1.json';
 import vcDraft3 from '../example/vc3.json';
 import { sign, verify, keyGen } from '../src/api';
@@ -31,6 +32,20 @@ describe('Signatures', () => {
     const verified1 = await verify(vc1, keypairs, localDocumentLoader);
     console.log(`verified1: ${JSON.stringify(verified1, null, 2)}`);
     expect(verified1.verified).toBeTruthy();
+  });
+
+  test('sign and verify with minimum proof config', async () => {
+    const vc0 = await sign(
+      vcDraft0WithMinimumProofConfig,
+      keypairs,
+      localDocumentLoader,
+    );
+    console.log(`vc0: ${JSON.stringify(vc0, null, 2)}`);
+    expect(vc0).toBeDefined();
+
+    const verified0 = await verify(vc0, keypairs, localDocumentLoader);
+    console.log(`verified0: ${JSON.stringify(verified0, null, 2)}`);
+    expect(verified0.verified).toBeTruthy();
   });
 
   test('sign and verify with remote contexts', async () => {
