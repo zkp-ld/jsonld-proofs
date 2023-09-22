@@ -1,11 +1,11 @@
-import keypairs from '../example/keypairs.json';
-import vcDraft0 from '../example/vc0.json';
-import vcDraft0WithMinimumProofConfig from '../example/vc0_with_minimum_proof_config.json';
-import vcDraft1 from '../example/vc1.json';
-import vcDraft3 from '../example/vc3.json';
 import { sign, verify, keyGen } from '../src/api';
 import { VC } from '../src/types';
 import { localDocumentLoader, remoteDocumentLoader } from './documentLoader';
+import keypairs from './example/keypairs.json';
+import vcDraft0 from './example/vc0.json';
+import vcDraft0WithMinimumProofConfig from './example/vc0_with_minimum_proof_config.json';
+import vcDraft1 from './example/vc1.json';
+import vcDraft3 from './example/vc3.json';
 
 describe('Signatures', () => {
   test('keyGen', async () => {
