@@ -4,9 +4,14 @@ import {
   verify as verifyWasm,
   deriveProof as deriveProofWasm,
   verifyProof as verifyProofWasm,
+  blindSignRequest as blindSignRequestWasm,
+  blindSign as blindSignWasm,
+  unblind as unblindWasm,
+  blindVerify as blindVerifyWasm,
   initializeWasm,
   VerifyResult,
   KeyPair,
+  BlindSignRequest,
 } from '@zkp-ld/rdf-proofs-wasm';
 import * as jsonld from 'jsonld';
 import { DocumentLoader, JsonValue, VC, VcPair } from './types';
@@ -67,12 +72,88 @@ export const verify = async (
   return verified;
 };
 
+export const blindSignRequest = async (
+  secret: Uint8Array,
+  nonce: string,
+): Promise<BlindSignRequest> => {
+  await initializeWasm();
+
+  const request = blindSignRequestWasm(secret, nonce);
+
+  return request;
+};
+
+export const blindSign = async (
+  request: string,
+  nonce: string,
+  vc: VC,
+  keyPair: jsonld.JsonLdDocument,
+  documentLoader: DocumentLoader,
+): Promise<VC> => {
+  await initializeWasm();
+
+  const vcRDF = await vcToRDF(vc, documentLoader);
+  const { document, documentRDF, proofRDF } = vcRDF;
+
+  const keyPairRDF = await jsonldToRDF(keyPair, documentLoader);
+
+  const signedProofRDF = blindSignWasm(
+    request,
+    nonce,
+    documentRDF,
+    proofRDF,
+    keyPairRDF,
+  );
+  const proof = await jsonldProofFromRDF(signedProofRDF, documentLoader);
+
+  document.proof = proof;
+
+  return document as VC;
+};
+
+export const unblind = async (
+  vc: VC,
+  blinding: string,
+  documentLoader: DocumentLoader,
+): Promise<VC> => {
+  await initializeWasm();
+
+  const vcRDF = await vcToRDF(vc, documentLoader);
+  const { document, documentRDF, proofRDF } = vcRDF;
+
+  const unblindedProofRDF = unblindWasm(documentRDF, proofRDF, blinding);
+  const proof = await jsonldProofFromRDF(unblindedProofRDF, documentLoader);
+
+  document.proof = proof;
+
+  return document as VC;
+};
+
+export const blindVerify = async (
+  secret: Uint8Array,
+  vc: VC,
+  publicKey: jsonld.JsonLdDocument,
+  documentLoader: DocumentLoader,
+): Promise<VerifyResult> => {
+  await initializeWasm();
+
+  const vcRDF = await vcToRDF(vc, documentLoader);
+  const { documentRDF, proofRDF } = vcRDF;
+
+  const publicKeyRDF = await jsonldToRDF(publicKey, documentLoader);
+
+  const verified = blindVerifyWasm(secret, documentRDF, proofRDF, publicKeyRDF);
+
+  return verified;
+};
+
 export const deriveProof = async (
   vcPairs: VcPair[],
   nonce: string,
   publicKeys: jsonld.JsonLdDocument,
   context: jsonld.ContextDefinition,
   documentLoader: DocumentLoader,
+  secret?: Uint8Array,
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
@@ -193,6 +274,7 @@ export const deriveProof = async (
   }
 
   const vp = deriveProofWasm({
+    secret,
     vcPairs: vcPairsRDF,
     deanonMap,
     nonce,
