@@ -227,12 +227,35 @@ export const skolemizeVC = (vc: jsonldSpec.JsonLdArray) => {
 export const deskolemizeNQuads = (nquads: string) =>
   nquads.replace(SKOLEM_REGEX, '_:$1');
 
+export const jsonldProofFromRDF = async (
+  proofRDF: string,
+  documentLoader: DocumentLoader,
+) => {
+  const proofFrame: jsonld.JsonLdDocument = {
+    '@context': DATA_INTEGRITY_CONTEXT,
+    type: 'DataIntegrityProof',
+  };
+
+  const proofRDFObj = proofRDF as unknown as object;
+  const expandedJsonld = await jsonld.fromRDF(proofRDFObj, {
+    format: 'application/n-quads',
+    safe: true,
+  });
+
+  const out = await jsonld.frame(expandedJsonld, proofFrame, {
+    documentLoader,
+    safe: true,
+  });
+
+  return out;
+};
+
 export const jsonldVPFromRDF = async (
   vpRDF: string,
   context: jsonld.ContextDefinition,
   documentLoader: DocumentLoader,
 ) => {
-  const vp_frame: jsonld.JsonLdDocument = {
+  const vpFrame: jsonld.JsonLdDocument = {
     type: 'VerifiablePresentation',
     proof: {},
     verifiableCredential: [
@@ -241,7 +264,7 @@ export const jsonldVPFromRDF = async (
       },
     ],
   };
-  vp_frame['@context'] = context;
+  vpFrame['@context'] = context;
 
   const vpRDFObj = vpRDF as unknown as object;
   const expandedJsonld = await jsonld.fromRDF(vpRDFObj, {
@@ -249,7 +272,7 @@ export const jsonldVPFromRDF = async (
     safe: true,
   });
 
-  const out = await jsonld.frame(expandedJsonld, vp_frame, {
+  const out = await jsonld.frame(expandedJsonld, vpFrame, {
     documentLoader,
     safe: true,
   });

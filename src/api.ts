@@ -19,6 +19,7 @@ import {
   vcToRDF,
   traverseJSON,
   skolemizeVC,
+  jsonldProofFromRDF,
 } from './utils';
 
 export const keyGen = async (): Promise<KeyPair> => {
@@ -37,13 +38,13 @@ export const sign = async (
   await initializeWasm();
 
   const vcRDF = await vcToRDF(vc, documentLoader);
-  const { document, proof, documentRDF, proofRDF } = vcRDF;
+  const { document, documentRDF, proofRDF } = vcRDF;
 
   const keyPairRDF = await jsonldToRDF(keyPair, documentLoader);
 
-  const signature = signWasm(documentRDF, proofRDF, keyPairRDF);
+  const signedProofRDF = signWasm(documentRDF, proofRDF, keyPairRDF);
+  const proof = await jsonldProofFromRDF(signedProofRDF, documentLoader);
 
-  proof.proofValue = signature;
   document.proof = proof;
 
   return document as VC;
