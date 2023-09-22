@@ -24,11 +24,16 @@ describe('Blind Signatures', () => {
     const secret = new Uint8Array(Buffer.from('SECRET'));
     const nonce = 'abcde';
 
-    const { request, blinding } = await blindSignRequest(secret, nonce);
-    expect(request).toBeDefined();
+    const { commitment, pokForCommitment, blinding } = await blindSignRequest(
+      secret,
+      nonce,
+    );
+    expect(commitment).toBeDefined();
+    expect(pokForCommitment).toBeDefined();
 
     const blindedVC = await blindSign(
-      request,
+      commitment,
+      pokForCommitment,
       nonce,
       vcDraft0WithoutCryptosuite,
       keypairs,
@@ -99,10 +104,14 @@ describe('Blind Signatures', () => {
     const secret = new Uint8Array(Buffer.from('SECRET'));
     const nonce = 'abcde';
 
-    const { request, blinding } = await blindSignRequest(secret, nonce);
+    const { commitment, pokForCommitment, blinding } = await blindSignRequest(
+      secret,
+      nonce,
+    );
 
     const blindedVC = await blindSign(
-      request,
+      commitment,
+      pokForCommitment,
       nonce,
       vcDraft0WithoutCryptosuite,
       keypairs,
