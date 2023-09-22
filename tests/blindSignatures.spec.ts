@@ -95,7 +95,7 @@ describe('Blind Signatures', () => {
     expect(proofVerified.verified).toBeTruthy();
   });
 
-  test('blind sign and verify without secret', async () => {
+  test('derive proof from bound credential without secret', async () => {
     const secret = new Uint8Array(Buffer.from('SECRET'));
     const nonce = 'abcde';
 
