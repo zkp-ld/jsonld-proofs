@@ -26,3 +26,8 @@ export type DocumentLoader =
       callback: (err: Error, remoteDoc: RemoteDocument) => void,
     ) => Promise<RemoteDocument>)
   | undefined;
+
+export interface DerivedProof {
+  readonly vp: jsonld.JsonLdDocument;
+  readonly blinding?: string;
+}
