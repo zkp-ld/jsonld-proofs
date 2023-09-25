@@ -8,6 +8,7 @@ import {
   sign,
   deriveProof,
   verifyProof,
+  verifyBlindSignRequest,
 } from '../src/api';
 import { localDocumentLoader } from './documentLoader';
 import disclosedBound0 from './example/disclosed0_bound.json';
@@ -22,19 +23,24 @@ const vpContext = _vpContext as unknown as jsonld.ContextDefinition;
 describe('Blind Signatures', () => {
   test('blind sign and verify', async () => {
     const secret = new Uint8Array(Buffer.from('SECRET'));
-    const nonce = 'abcde';
+    const challenge_for_blind_sign = 'abcde';
 
     const { commitment, pokForCommitment, blinding } = await blindSignRequest(
       secret,
-      nonce,
+      challenge_for_blind_sign,
     );
     expect(commitment).toBeDefined();
     expect(pokForCommitment).toBeDefined();
 
-    const blindedVC = await blindSign(
+    const verifiedRequest = await verifyBlindSignRequest(
       commitment,
       pokForCommitment,
-      nonce,
+      challenge_for_blind_sign,
+    );
+    expect(verifiedRequest.verified).toBeTruthy();
+
+    const blindedVC = await blindSign(
+      commitment,
       vcDraft0WithoutCryptosuite,
       keypairs,
       localDocumentLoader,
@@ -77,42 +83,44 @@ describe('Blind Signatures', () => {
     expect(verified.verified).toBeTruthy();
 
     const vc1 = await sign(vcDraft1, keypairs, localDocumentLoader);
-    const vp = await deriveProof(
+
+    const challenge_for_derive_proof = 'xyz';
+    const domain = 'example.org';
+
+    const { vp } = await deriveProof(
       [
         { original: vc0, disclosed: disclosedBound0 },
         { original: vc1, disclosed: disclosed1 },
       ],
-      nonce,
       keypairs,
       vpContext,
       localDocumentLoader,
+      challenge_for_derive_proof,
+      domain,
       secret,
+      true,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
     const proofVerified = await verifyProof(
       vp,
-      nonce,
       keypairs,
       localDocumentLoader,
+      challenge_for_derive_proof,
+      domain,
     );
     expect(proofVerified.verified).toBeTruthy();
   });
 
   test('derive proof from bound credential without secret', async () => {
     const secret = new Uint8Array(Buffer.from('SECRET'));
-    const nonce = 'abcde';
+    const challenge = 'abcde';
 
-    const { commitment, pokForCommitment, blinding } = await blindSignRequest(
-      secret,
-      nonce,
-    );
+    const { commitment, blinding } = await blindSignRequest(secret, challenge);
 
     const blindedVC = await blindSign(
       commitment,
-      pokForCommitment,
-      nonce,
       vcDraft0WithoutCryptosuite,
       keypairs,
       localDocumentLoader,
@@ -123,10 +131,11 @@ describe('Blind Signatures', () => {
     await expect(
       deriveProof(
         [{ original: vc0, disclosed: disclosedBound0 }],
-        nonce,
         keypairs,
         vpContext,
         localDocumentLoader,
+        challenge,
+        undefined,
         // secret,
       ),
     ).rejects.toThrowError('RDFProofsError(MissingSecret)');

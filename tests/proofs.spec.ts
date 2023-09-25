@@ -23,25 +23,25 @@ describe('Proofs', () => {
   test('deriveProof and verifyProof', async () => {
     const vc0 = await sign(vcDraft0, keypairs, localDocumentLoader);
     const vc1 = await sign(vcDraft1, keypairs, localDocumentLoader);
-    const nonce = 'abcde';
-    const vp = await deriveProof(
+    const challenge = 'abcde';
+    const { vp } = await deriveProof(
       [
         { original: vc0, disclosed: disclosed0 },
         { original: vc1, disclosed: disclosed1 },
       ],
-      nonce,
       keypairs,
       vpContext,
       localDocumentLoader,
+      challenge,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
     const verified = await verifyProof(
       vp,
-      nonce,
       keypairs,
       localDocumentLoader,
+      challenge,
     );
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
@@ -49,34 +49,34 @@ describe('Proofs', () => {
 
   test('deriveProof and verifyProof with remote context', async () => {
     const vc3 = await sign(vcDraft3, keypairs, remoteDocumentLoader);
-    const nonce = 'abcde';
-    const vp = await deriveProof(
+    const challenge = 'abcde';
+    const { vp } = await deriveProof(
       [{ original: vc3, disclosed: disclosed3 }],
-      nonce,
       keypairs,
       vpContext3,
       remoteDocumentLoader,
+      challenge,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
     const verified = await verifyProof(
       vp,
-      nonce,
       keypairs,
       remoteDocumentLoader,
+      challenge,
     );
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
 
   test('verifyProof', async () => {
-    const nonce = 'abcde';
+    const challenge = 'abcde';
     const verified = await verifyProof(
       vp,
-      nonce,
       keypairs,
       localDocumentLoader,
+      challenge,
     );
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
@@ -85,25 +85,25 @@ describe('Proofs', () => {
   test('deriveProof and verifyProof with hidden literal', async () => {
     const vc0 = await sign(vc0HiddenLiteral, keypairs, localDocumentLoader);
     const vc1 = await sign(vcDraft1, keypairs, localDocumentLoader);
-    const nonce = 'abcde';
-    const vp = await deriveProof(
+    const challenge = 'abcde';
+    const { vp } = await deriveProof(
       [
         { original: vc0, disclosed: disclosed0HiddenLiteral },
         { original: vc1, disclosed: disclosed1 },
       ],
-      nonce,
       keypairs,
       vpContext,
       localDocumentLoader,
+      challenge,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
     const verified = await verifyProof(
       vp,
-      nonce,
       keypairs,
       localDocumentLoader,
+      challenge,
     );
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
@@ -111,22 +111,22 @@ describe('Proofs', () => {
 
   test('deriveProof and verifyProof with hidden literal (2)', async () => {
     const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
-    const nonce = 'abcde';
-    const vp = await deriveProof(
+    const challenge = 'abcde';
+    const { vp } = await deriveProof(
       [{ original: vc2, disclosed: disclosed2 }],
-      nonce,
       keypairs,
       vpContext,
       localDocumentLoader,
+      challenge,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
     const verified = await verifyProof(
       vp,
-      nonce,
       keypairs,
       localDocumentLoader,
+      challenge,
     );
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
