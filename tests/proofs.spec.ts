@@ -24,7 +24,7 @@ describe('Proofs', () => {
     const vc0 = await sign(vcDraft0, keypairs, localDocumentLoader);
     const vc1 = await sign(vcDraft1, keypairs, localDocumentLoader);
     const challenge = 'abcde';
-    const { vp } = await deriveProof(
+    const vp = await deriveProof(
       [
         { original: vc0, disclosed: disclosed0 },
         { original: vc1, disclosed: disclosed1 },
@@ -50,7 +50,7 @@ describe('Proofs', () => {
   test('deriveProof and verifyProof with remote context', async () => {
     const vc3 = await sign(vcDraft3, keypairs, remoteDocumentLoader);
     const challenge = 'abcde';
-    const { vp } = await deriveProof(
+    const vp = await deriveProof(
       [{ original: vc3, disclosed: disclosed3 }],
       keypairs,
       vpContext3,
@@ -86,7 +86,7 @@ describe('Proofs', () => {
     const vc0 = await sign(vc0HiddenLiteral, keypairs, localDocumentLoader);
     const vc1 = await sign(vcDraft1, keypairs, localDocumentLoader);
     const challenge = 'abcde';
-    const { vp } = await deriveProof(
+    const vp = await deriveProof(
       [
         { original: vc0, disclosed: disclosed0HiddenLiteral },
         { original: vc1, disclosed: disclosed1 },
@@ -112,7 +112,7 @@ describe('Proofs', () => {
   test('deriveProof and verifyProof with hidden literal (2)', async () => {
     const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
     const challenge = 'abcde';
-    const { vp } = await deriveProof(
+    const vp = await deriveProof(
       [{ original: vc2, disclosed: disclosed2 }],
       keypairs,
       vpContext,

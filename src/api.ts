@@ -4,7 +4,7 @@ import {
   verify as verifyWasm,
   deriveProof as deriveProofWasm,
   verifyProof as verifyProofWasm,
-  blindSignRequest as blindSignRequestWasm,
+  requestBlindSign as requestBlindSignWasm,
   verifyBlindSignRequest as verifyBlindSignRequestWasm,
   blindSign as blindSignWasm,
   unblind as unblindWasm,
@@ -15,7 +15,7 @@ import {
   BlindSignRequest,
 } from '@zkp-ld/rdf-proofs-wasm';
 import * as jsonld from 'jsonld';
-import { DerivedProof, DocumentLoader, JsonValue, VC, VcPair } from './types';
+import { DocumentLoader, JsonValue, VC, VcPair } from './types';
 import {
   deskolemizeNQuads,
   jsonldToRDF,
@@ -73,13 +73,14 @@ export const verify = async (
   return verified;
 };
 
-export const blindSignRequest = async (
+export const requestBlindSign = async (
   secret: Uint8Array,
-  challenge: string,
+  challenge?: string,
+  skipPok?: boolean,
 ): Promise<BlindSignRequest> => {
   await initializeWasm();
 
-  const request = blindSignRequestWasm(secret, challenge);
+  const request = requestBlindSignWasm(secret, challenge, skipPok);
 
   return request;
 };
@@ -170,8 +171,8 @@ export const deriveProof = async (
   challenge?: string,
   domain?: string,
   secret?: Uint8Array,
-  commitSecret?: boolean,
-): Promise<DerivedProof> => {
+  blindSignRequest?: BlindSignRequest,
+): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
   const vcPairsRDF = [];
@@ -290,19 +291,19 @@ export const deriveProof = async (
     });
   }
 
-  const { vp, blinding } = deriveProofWasm({
+  const vp = deriveProofWasm({
     vcPairs: vcPairsRDF,
     deanonMap,
     keyGraph: publicKeysRDF,
     challenge,
     domain,
     secret,
-    commitSecret,
+    blindSignRequest,
   });
 
   const jsonldVP = await jsonldVPFromRDF(vp, context, documentLoader);
 
-  return { vp: jsonldVP, blinding };
+  return jsonldVP;
 };
 
 export const verifyProof = async (

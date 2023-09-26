@@ -4,7 +4,7 @@ export {
   verify,
   deriveProof,
   verifyProof,
-  blindSignRequest,
+  requestBlindSign as blindSignRequest,
   verifyBlindSignRequest,
   blindSign,
   unblind,

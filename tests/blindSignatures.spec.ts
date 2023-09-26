@@ -1,6 +1,6 @@
 import * as jsonld from 'jsonld';
 import {
-  blindSignRequest,
+  requestBlindSign,
   blindSign,
   unblind,
   blindVerify,
@@ -25,12 +25,16 @@ describe('Blind Signatures', () => {
     const secret = new Uint8Array(Buffer.from('SECRET'));
     const challenge_for_blind_sign = 'abcde';
 
-    const { commitment, pokForCommitment, blinding } = await blindSignRequest(
+    const { commitment, pokForCommitment, blinding } = await requestBlindSign(
       secret,
       challenge_for_blind_sign,
     );
     expect(commitment).toBeDefined();
     expect(pokForCommitment).toBeDefined();
+    if (pokForCommitment === undefined) {
+      fail;
+      return;
+    }
 
     const verifiedRequest = await verifyBlindSignRequest(
       commitment,
@@ -84,10 +88,12 @@ describe('Blind Signatures', () => {
 
     const vc1 = await sign(vcDraft1, keypairs, localDocumentLoader);
 
+    const blindSignRequest = await requestBlindSign(secret, undefined, true);
+
     const challenge_for_derive_proof = 'xyz';
     const domain = 'example.org';
 
-    const { vp } = await deriveProof(
+    const vp = await deriveProof(
       [
         { original: vc0, disclosed: disclosedBound0 },
         { original: vc1, disclosed: disclosed1 },
@@ -98,7 +104,7 @@ describe('Blind Signatures', () => {
       challenge_for_derive_proof,
       domain,
       secret,
-      true,
+      blindSignRequest,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -117,7 +123,7 @@ describe('Blind Signatures', () => {
     const secret = new Uint8Array(Buffer.from('SECRET'));
     const challenge = 'abcde';
 
-    const { commitment, blinding } = await blindSignRequest(secret, challenge);
+    const { commitment, blinding } = await requestBlindSign(secret, challenge);
 
     const blindedVC = await blindSign(
       commitment,
@@ -135,7 +141,7 @@ describe('Blind Signatures', () => {
         vpContext,
         localDocumentLoader,
         challenge,
-        undefined,
+        // undefined,
         // secret,
       ),
     ).rejects.toThrowError('RDFProofsError(MissingSecret)');
