@@ -75,11 +75,11 @@ export const verify = async (
 
 export const blindSignRequest = async (
   secret: Uint8Array,
-  nonce: string,
+  challenge: string,
 ): Promise<BlindSignRequest> => {
   await initializeWasm();
 
-  const request = blindSignRequestWasm(secret, nonce);
+  const request = blindSignRequestWasm(secret, challenge);
 
   return request;
 };
