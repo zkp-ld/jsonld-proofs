@@ -105,9 +105,15 @@ describe('Blind Signatures', () => {
       domain,
       secret,
       blindSignRequest,
+      true,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
+
+    // PPID defined by domain = `example.org` and secret = `SECRET`
+    expect(vp.holder.id).toBe(
+      'ppid:uuGieOR_xSSZojovK3akZBNSQKvrDFvGto9-y70Cm_LmtO6BuMF-l_vO_kY5LhpYc',
+    );
 
     const proofVerified = await verifyProof(
       vp,

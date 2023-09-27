@@ -172,6 +172,7 @@ export const deriveProof = async (
   domain?: string,
   secret?: Uint8Array,
   blindSignRequest?: BlindSignRequest,
+  withPpid?: boolean,
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
@@ -299,6 +300,7 @@ export const deriveProof = async (
     domain,
     secret,
     blindSignRequest,
+    withPpid,
   });
 
   const jsonldVP = await jsonldVPFromRDF(vp, context, documentLoader);
