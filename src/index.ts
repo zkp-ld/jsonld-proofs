@@ -2,12 +2,12 @@ export {
   keyGen,
   sign,
   verify,
-  deriveProof,
-  verifyProof,
-  requestBlindSign as blindSignRequest,
+  requestBlindSign,
   verifyBlindSignRequest,
   blindSign,
   unblind,
   blindVerify,
+  deriveProof,
+  verifyProof,
 } from './api';
 export { VC, VcPair } from './types';
