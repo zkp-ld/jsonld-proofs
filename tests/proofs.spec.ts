@@ -6,18 +6,22 @@ import disclosed0HiddenLiteral from './example/disclosed0_hidden_literals.json';
 import disclosed1 from './example/disclosed1.json';
 import disclosed2 from './example/disclosed2.json';
 import disclosed3 from './example/disclosed3.json';
+import disclosed4 from './example/disclosed4.json';
 import keypairs from './example/keypairs.json';
 import vcDraft0 from './example/vc0.json';
 import vc0HiddenLiteral from './example/vc0_hidden_literals.json';
 import vcDraft1 from './example/vc1.json';
 import vcDraft2 from './example/vc2.json';
 import vcDraft3 from './example/vc3.json';
+import vcDraft4 from './example/vc4.json';
 import vp from './example/vp.json';
 import _vpContext from './example/vpContext.json';
 import _vpContext3 from './example/vpContext3.json';
+import _vpContext4 from './example/vpContext4.json';
 
 const vpContext = _vpContext as unknown as jsonld.ContextDefinition;
 const vpContext3 = _vpContext3 as unknown as jsonld.ContextDefinition;
+const vpContext4 = _vpContext4 as unknown as jsonld.ContextDefinition;
 
 describe('Proofs', () => {
   test('deriveProof and verifyProof', async () => {
@@ -116,6 +120,29 @@ describe('Proofs', () => {
       [{ original: vc2, disclosed: disclosed2 }],
       keypairs,
       vpContext,
+      localDocumentLoader,
+      challenge,
+    );
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
+    expect(vp).not.toHaveProperty('error');
+
+    const verified = await verifyProof(
+      vp,
+      keypairs,
+      localDocumentLoader,
+      challenge,
+    );
+    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
+    expect(verified.verified).toBeTruthy();
+  });
+
+  test('deriveProof and verifyProof with @list and @set', async () => {
+    const vc4 = await sign(vcDraft4, keypairs, localDocumentLoader);
+    const challenge = 'abcde';
+    const vp = await deriveProof(
+      [{ original: vc4, disclosed: disclosed4 }],
+      keypairs,
+      vpContext4,
       localDocumentLoader,
       challenge,
     );

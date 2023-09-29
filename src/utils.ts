@@ -82,7 +82,7 @@ const _diffJSONLD = (
     node.forEach((item, i) => {
       const updatedPath = path.concat([i]);
 
-      if (!Array.isArray(item) || item.length !== 2) {
+      if (!Array.isArray(item)) {
         throw new TypeError('json-diff error');
       }
       if (item[0] === '~') {
@@ -211,7 +211,7 @@ const _skolemizeJSONLD = (node: JsonValue) => {
         _skolemizeJSONLD(node[key]);
       }
     }
-    if (!('@value' in node || '@id' in node)) {
+    if (!('@value' in node || '@id' in node || '@list' in node)) {
       node['@id'] = `${SKOLEM_PREFIX}${nanoid()}`;
     }
   }

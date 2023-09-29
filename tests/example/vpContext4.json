@@ -1,0 +1,15 @@
+[
+  "https://www.w3.org/2018/credentials/v1",
+  "https://www.w3.org/ns/data-integrity/v1",
+  "https://schema.org",
+  "https://zkp-ld.org/context.jsonld",
+  {
+    "children": {
+      "@id": "http://example.org/childrenSet"
+    },
+    "childrenList": {
+      "@id": "http://example.org/children",
+      "@container": "@list"
+    }
+  }
+]
