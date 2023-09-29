@@ -1,7 +1,7 @@
 [
   "https://www.w3.org/2018/credentials/v1",
   "https://www.w3.org/ns/data-integrity/v1",
-  "https://schema.org",
+  "https://schema.org/",
   "https://zkp-ld.org/context.jsonld",
   {
     "isPatientOf": "http://example.org/vocab/isPatientOf",

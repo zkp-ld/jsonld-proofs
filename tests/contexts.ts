@@ -10,7 +10,7 @@ export const DATA_INTEGRITY_CONTEXT = 'https://www.w3.org/ns/data-integrity/v1';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CONTEXTS: Record<string, any> = {
   'https://www.w3.org/2018/credentials/v1': credentialV1Context,
-  'https://schema.org': schemaOrgContext,
+  'https://schema.org/': schemaOrgContext,
   'https://w3id.org/security/multikey/v1': multikeyV1Context,
   'https://www.w3.org/ns/did/v1': didV1Context,
   'https://zkp-ld.org/context.jsonld': zkpldContext,
