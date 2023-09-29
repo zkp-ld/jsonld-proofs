@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1] - 2023-09-29
+
+### Fixed
+
+- Enable selective disclosure for `@set` and `@list`
+  - now you can just remove elements in `@set`, whereas use a bnode id like `_:abc` to unreveal an element in `@list`
+
 ## [0.8.0] - 2023-09-28
 
 ### Added
