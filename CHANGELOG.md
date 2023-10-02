@@ -5,7 +5,8 @@
 ### Fixed
 
 - Reflect the latest updates in `rdf-proofs-wasm` (and its underlying `rdf-proofs`)
-  - change `proofPurpose` of VP from `assertionMethod` to `authentication` to align with the spec
+  - Change `proofPurpose` of VP from `assertionMethod` to `authentication` to align with the spec
+- Fix context URL for schema.org in tests to add the trailing slash
 
 ## [0.8.1] - 2023-09-29
 
