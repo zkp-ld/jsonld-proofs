@@ -12,9 +12,9 @@
   "credentialSubject": {
     "id": "did:example:john",
     "type": "Person",
-    "givenName": "_:X",
+    "givenName": "John",
     "familyName": "Smith",
-    "birthDate": "1970-01-01",
+    "birthDate": "_:X",
     "homeLocation": {
       "id": "did:example:cityA"
     }

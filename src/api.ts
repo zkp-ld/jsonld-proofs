@@ -13,6 +13,7 @@ import {
   VerifyResult,
   KeyPair,
   BlindSignRequest,
+  DeriveProofPredicate,
 } from '@zkp-ld/rdf-proofs-wasm';
 import * as jsonld from 'jsonld';
 import { DocumentLoader, JsonValue, VC, VcPair } from './types';
@@ -173,6 +174,7 @@ export const deriveProof = async (
   secret?: Uint8Array,
   blindSignRequest?: BlindSignRequest,
   withPpid?: boolean,
+  predicates?: DeriveProofPredicate[],
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
@@ -301,6 +303,7 @@ export const deriveProof = async (
     secret,
     blindSignRequest,
     withPpid,
+    predicates,
   });
 
   const jsonldVP = await jsonldVPFromRDF(vp, context, documentLoader);
@@ -314,13 +317,20 @@ export const verifyProof = async (
   documentLoader: DocumentLoader,
   challenge?: string,
   domain?: string,
+  snarkVerifyingKeys?: Map<string, string>,
 ): Promise<VerifyResult> => {
   await initializeWasm();
 
   const vpRDF = await jsonldToRDF(vp, documentLoader);
   const publicKeysRDF = await jsonldToRDF(publicKeys, documentLoader);
 
-  const verified = verifyProofWasm(vpRDF, publicKeysRDF, challenge, domain);
+  const verified = verifyProofWasm({
+    vp: vpRDF,
+    keyGraph: publicKeysRDF,
+    challenge,
+    domain,
+    snarkVerifyingKeys,
+  });
 
   return verified;
 };

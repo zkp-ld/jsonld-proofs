@@ -1,5 +1,6 @@
 import * as jsonld from 'jsonld';
 import { sign, deriveProof, verifyProof } from '../src/api';
+import lessThanPublic64 from './circuits/less_than_public_64.json';
 import { localDocumentLoader, remoteDocumentLoader } from './documentLoader';
 import disclosed0 from './example/disclosed0.json';
 import disclosed0HiddenLiteral from './example/disclosed0_hidden_literals.json';
@@ -14,7 +15,6 @@ import vcDraft1 from './example/vc1.json';
 import vcDraft2 from './example/vc2.json';
 import vcDraft3 from './example/vc3.json';
 import vcDraft4 from './example/vc4.json';
-import vp from './example/vp.json';
 import _vpContext from './example/vpContext.json';
 import _vpContext3 from './example/vpContext3.json';
 import _vpContext4 from './example/vpContext4.json';
@@ -74,18 +74,6 @@ describe('Proofs', () => {
     expect(verified.verified).toBeTruthy();
   });
 
-  test('verifyProof', async () => {
-    const challenge = 'abcde';
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
-      challenge,
-    );
-    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
-    expect(verified.verified).toBeTruthy();
-  });
-
   test('deriveProof and verifyProof with hidden literal', async () => {
     const vc0 = await sign(vc0HiddenLiteral, keypairs, localDocumentLoader);
     const vc1 = await sign(vcDraft1, keypairs, localDocumentLoader);
@@ -95,29 +83,6 @@ describe('Proofs', () => {
         { original: vc0, disclosed: disclosed0HiddenLiteral },
         { original: vc1, disclosed: disclosed1 },
       ],
-      keypairs,
-      vpContext,
-      localDocumentLoader,
-      challenge,
-    );
-    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
-    expect(vp).not.toHaveProperty('error');
-
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
-      challenge,
-    );
-    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
-    expect(verified.verified).toBeTruthy();
-  });
-
-  test('deriveProof and verifyProof with hidden literal (2)', async () => {
-    const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
-    const challenge = 'abcde';
-    const vp = await deriveProof(
-      [{ original: vc2, disclosed: disclosed2 }],
       keypairs,
       vpContext,
       localDocumentLoader,
@@ -157,5 +122,103 @@ describe('Proofs', () => {
     );
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
+  });
+
+  test('deriveProof and verifyProof with range proof', async () => {
+    const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
+    const challenge = 'abcde';
+
+    const predicates = [
+      {
+        circuitId: lessThanPublic64.id,
+        circuitR1CS: lessThanPublic64.r1cs,
+        circuitWasm: lessThanPublic64.wasm,
+        snarkProvingKey: lessThanPublic64.snarkProvingKey,
+        private: [['a', '_:X']],
+        public: [
+          ['b', '"1990-06-30"^^<http://www.w3.org/2001/XMLSchema#date>'],
+        ],
+      },
+    ];
+
+    const vp = await deriveProof(
+      [{ original: vc2, disclosed: disclosed2 }],
+      keypairs,
+      vpContext,
+      localDocumentLoader,
+      challenge,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      predicates,
+    );
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
+    expect(vp).not.toHaveProperty('error');
+
+    const verified = await verifyProof(
+      vp,
+      keypairs,
+      localDocumentLoader,
+      challenge,
+      undefined,
+      new Map([
+        [
+          '<https://zkp-ld.org/circuit/lessThan>',
+          lessThanPublic64.snarkProvingKey,
+        ],
+      ]),
+    );
+    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
+    expect(verified.verified).toBeTruthy();
+  });
+
+  test('deriveProof and verifyProof with unsatisfied range proof', async () => {
+    const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
+    const challenge = 'abcde';
+
+    const predicates = [
+      {
+        circuitId: lessThanPublic64.id,
+        circuitR1CS: lessThanPublic64.r1cs,
+        circuitWasm: lessThanPublic64.wasm,
+        snarkProvingKey: lessThanPublic64.snarkProvingKey,
+        private: [['a', '_:X']],
+        public: [
+          ['b', '"1000-12-31"^^<http://www.w3.org/2001/XMLSchema#date>'],
+        ],
+      },
+    ];
+
+    const vp = await deriveProof(
+      [{ original: vc2, disclosed: disclosed2 }],
+      keypairs,
+      vpContext,
+      localDocumentLoader,
+      challenge,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      predicates,
+    );
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
+    expect(vp).not.toHaveProperty('error');
+
+    const verified = await verifyProof(
+      vp,
+      keypairs,
+      localDocumentLoader,
+      challenge,
+      undefined,
+      new Map([
+        [
+          '<https://zkp-ld.org/circuit/lessThan>',
+          lessThanPublic64.snarkProvingKey,
+        ],
+      ]),
+    );
+    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
+    expect(verified.verified).toBeFalsy();
   });
 });
