@@ -124,7 +124,7 @@ describe('Proofs', () => {
     expect(verified.verified).toBeTruthy();
   });
 
-  test('deriveProof and verifyProof with range proof', async () => {
+  test('deriveProof and verifyProof with range (less-than) proof', async () => {
     const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
     const challenge = 'abcde';
 
@@ -134,9 +134,9 @@ describe('Proofs', () => {
         circuitR1CS: lessThanPublic64.r1cs,
         circuitWasm: lessThanPublic64.wasm,
         snarkProvingKey: lessThanPublic64.snarkProvingKey,
-        private: [['a', '_:X']],
+        private: [['lesser', '_:X']],
         public: [
-          ['b', '"1990-06-30"^^<http://www.w3.org/2001/XMLSchema#date>'],
+          ['greater', '"1990-06-30"^^<http://www.w3.org/2001/XMLSchema#date>'],
         ],
       },
     ];
@@ -173,7 +173,7 @@ describe('Proofs', () => {
     expect(verified.verified).toBeTruthy();
   });
 
-  test('deriveProof and verifyProof with unsatisfied range proof', async () => {
+  test('deriveProof and verifyProof with unsatisfied range (less-than) proof', async () => {
     const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
     const challenge = 'abcde';
 
@@ -183,9 +183,9 @@ describe('Proofs', () => {
         circuitR1CS: lessThanPublic64.r1cs,
         circuitWasm: lessThanPublic64.wasm,
         snarkProvingKey: lessThanPublic64.snarkProvingKey,
-        private: [['a', '_:X']],
+        private: [['lesser', '_:X']],
         public: [
-          ['b', '"1000-12-31"^^<http://www.w3.org/2001/XMLSchema#date>'],
+          ['greater', '"1970-01-01"^^<http://www.w3.org/2001/XMLSchema#date>'], // same value must be rejected in less-than proof
         ],
       },
     ];
