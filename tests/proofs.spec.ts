@@ -1,5 +1,6 @@
 import * as jsonld from 'jsonld';
 import { sign, deriveProof, verifyProof } from '../src/api';
+import lessThanEqPublic64 from './circuits/less_than_eq_public_64.json';
 import lessThanPublic64 from './circuits/less_than_public_64.json';
 import { localDocumentLoader, remoteDocumentLoader } from './documentLoader';
 import disclosed0 from './example/disclosed0.json';
@@ -220,5 +221,54 @@ describe('Proofs', () => {
     );
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeFalsy();
+  });
+
+  test('deriveProof and verifyProof with range (less-than-equal) proof', async () => {
+    const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
+    const challenge = 'abcde';
+
+    const predicates = [
+      {
+        circuitId: lessThanEqPublic64.id,
+        circuitR1CS: lessThanEqPublic64.r1cs,
+        circuitWasm: lessThanEqPublic64.wasm,
+        snarkProvingKey: lessThanEqPublic64.snarkProvingKey,
+        private: [['lesser', '_:X']],
+        public: [
+          ['greater', '"1970-01-01"^^<http://www.w3.org/2001/XMLSchema#date>'],
+        ],
+      },
+    ];
+
+    const vp = await deriveProof(
+      [{ original: vc2, disclosed: disclosed2 }],
+      keypairs,
+      vpContext,
+      localDocumentLoader,
+      challenge,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      predicates,
+    );
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
+    expect(vp).not.toHaveProperty('error');
+
+    const verified = await verifyProof(
+      vp,
+      keypairs,
+      localDocumentLoader,
+      challenge,
+      undefined,
+      new Map([
+        [
+          '<https://zkp-ld.org/circuit/lessThanEq>',
+          lessThanEqPublic64.snarkProvingKey,
+        ],
+      ]),
+    );
+    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
+    expect(verified.verified).toBeTruthy();
   });
 });
