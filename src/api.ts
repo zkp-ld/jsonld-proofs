@@ -13,7 +13,7 @@ import {
   VerifyResult,
   KeyPair,
   BlindSignRequest,
-  DeriveProofPredicate,
+  CircuitString,
 } from '@zkp-ld/rdf-proofs-wasm';
 import * as jsonld from 'jsonld';
 import { DocumentLoader, JsonValue, VC, VcPair } from './types';
@@ -174,13 +174,26 @@ export const deriveProof = async (
   secret?: Uint8Array,
   blindSignRequest?: BlindSignRequest,
   withPpid?: boolean,
-  predicates?: DeriveProofPredicate[],
+  predicates?: jsonld.JsonLdDocument[],
+  circuits?: Map<string, CircuitString>,
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
   const vcPairsRDF = [];
   const deanonMap = new Map<string, string>();
   const publicKeysRDF = await jsonldToRDF(publicKeys, documentLoader);
+
+  const skolemizedPredicatesRDF = predicates
+    ? await Promise.all(
+        predicates.map(
+          async (predicate) =>
+            await jsonldToRDF(skolemizeVC(predicate), documentLoader),
+        ),
+      )
+    : undefined;
+  const predicatesRDF = skolemizedPredicatesRDF
+    ? skolemizedPredicatesRDF.map((predicate) => deskolemizeNQuads(predicate))
+    : undefined;
 
   for (const { original, disclosed } of vcPairs) {
     const expandedOriginalVC = await jsonld.expand(original, {
@@ -303,7 +316,8 @@ export const deriveProof = async (
     secret,
     blindSignRequest,
     withPpid,
-    predicates,
+    predicates: predicatesRDF,
+    circuits,
   });
 
   const jsonldVP = await jsonldVPFromRDF(vp, context, documentLoader);

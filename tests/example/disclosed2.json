@@ -16,7 +16,11 @@
     "familyName": "Smith",
     "birthDate": "_:X",
     "homeLocation": {
-      "id": "did:example:cityA"
+      "id": "did:example:cityA",
+      "maximumAttendeeCapacity": {
+        "@value": "_:Y",
+        "@type": "xsd:integer"
+      }
     }
   },
   "proof": {

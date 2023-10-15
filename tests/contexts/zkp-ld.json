@@ -1,6 +1,9 @@
 {
   "@context": {
     "@version": 1.1,
+    "@protected": true,
+    "id": "@id",
+    "type": "@type",
     "ppid": {
       "@id": "https://zkp-ld.org/.well-known/genid/",
       "@prefix": true
@@ -14,20 +17,25 @@
       "@type": "https://w3id.org/security#multibase"
     },
     "predicate": {
-      "@id": "https://zkp-ld.org/security#predicate"
+      "@id": "https://zkp-ld.org/security#predicate",
+      "@type": "@id",
+      "@container": "@graph"
     },
     "Predicate": {
       "@id": "https://zkp-ld.org/security#Predicate",
       "@context": {
         "circuit": {
-          "@id": "https://zkp-ld.org/security#circuit"
+          "@id": "https://zkp-ld.org/security#circuit",
+          "@type": "@id"
         },
         "private": {
           "@id": "https://zkp-ld.org/security#private",
+          "@type": "@id",
           "@container": "@list"
         },
         "public": {
           "@id": "https://zkp-ld.org/security#public",
+          "@type": "@id",
           "@container": "@list"
         }
       }
@@ -39,7 +47,8 @@
           "@id": "https://zkp-ld.org/security#var"
         },
         "val": {
-          "@id": "https://zkp-ld.org/security#val"
+          "@id": "https://zkp-ld.org/security#val",
+          "@type": "@id"
         }
       }
     },
