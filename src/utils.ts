@@ -209,6 +209,11 @@ const _skolemizeJSONLD = (node: JsonValue) => {
         key !== '@context'
       ) {
         _skolemizeJSONLD(node[key]);
+      } else if (key === '@id') {
+        const value = node['@id'];
+        if (typeof value === 'string' && value.startsWith('_:')) {
+          node['@id'] = `${SKOLEM_PREFIX}${value.slice(2)}`;
+        }
       }
     }
     if (!('@value' in node || '@id' in node || '@list' in node)) {
@@ -217,7 +222,9 @@ const _skolemizeJSONLD = (node: JsonValue) => {
   }
 };
 
-export const skolemizeVC = (vc: jsonldSpec.JsonLdArray) => {
+export const skolemizeVC = (
+  vc: jsonldSpec.JsonLdArray | jsonld.JsonLdDocument,
+) => {
   const output = JSON.parse(JSON.stringify(vc)) as JsonValue;
   _skolemizeJSONLD(output);
 
@@ -258,6 +265,11 @@ export const jsonldVPFromRDF = async (
   const vpFrame: jsonld.JsonLdDocument = {
     type: 'VerifiablePresentation',
     proof: {},
+    predicate: [
+      {
+        type: 'Predicate',
+      },
+    ],
     verifiableCredential: [
       {
         type: 'VerifiableCredential',
@@ -274,6 +286,7 @@ export const jsonldVPFromRDF = async (
 
   const out = await jsonld.frame(expandedJsonld, vpFrame, {
     documentLoader,
+    omitDefault: true,
     safe: true,
   });
 

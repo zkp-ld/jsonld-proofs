@@ -125,19 +125,49 @@ describe('Proofs', () => {
     expect(verified.verified).toBeTruthy();
   });
 
-  test('deriveProof and verifyProof with range (less-than) proof', async () => {
+  test('deriveProof and verifyProof with less-than range proof', async () => {
     const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
     const challenge = 'abcde';
 
+    const circuits = new Map([
+      [
+        lessThanPublic64.id,
+        {
+          r1cs: lessThanPublic64.r1cs,
+          wasm: lessThanPublic64.wasm,
+          provingKey: lessThanPublic64.snarkProvingKey,
+        },
+      ],
+    ]);
     const predicates = [
       {
-        circuitId: lessThanPublic64.id,
-        circuitR1CS: lessThanPublic64.r1cs,
-        circuitWasm: lessThanPublic64.wasm,
-        snarkProvingKey: lessThanPublic64.snarkProvingKey,
-        private: [['lesser', '_:X']],
+        '@context': 'https://zkp-ld.org/context.jsonld',
+        type: 'Predicate',
+        circuit: 'circ:lessThan',
+        private: [
+          {
+            type: 'PrivateVariable',
+            var: 'lesser',
+            val: { '@id': '_:Y' },
+          },
+        ],
         public: [
-          ['greater', '"1990-06-30"^^<http://www.w3.org/2001/XMLSchema#date>'],
+          // {
+          //   type: 'PublicVariable',
+          //   var: 'greater',
+          //   val: {
+          //     '@value': '1990-06-30',
+          //     '@type': 'http://www.w3.org/2001/XMLSchema#date',
+          //   },
+          // },
+          {
+            type: 'PublicVariable',
+            var: 'greater',
+            val: {
+              '@value': '50000',
+              '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+            },
+          },
         ],
       },
     ];
@@ -153,6 +183,7 @@ describe('Proofs', () => {
       undefined,
       undefined,
       predicates,
+      circuits,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -174,19 +205,41 @@ describe('Proofs', () => {
     expect(verified.verified).toBeTruthy();
   });
 
-  test('deriveProof and verifyProof with unsatisfied range (less-than) proof', async () => {
+  test('deriveProof and verifyProof with unsatisfied less-than range proof', async () => {
     const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
     const challenge = 'abcde';
 
+    const circuits = new Map([
+      [
+        lessThanPublic64.id,
+        {
+          r1cs: lessThanPublic64.r1cs,
+          wasm: lessThanPublic64.wasm,
+          provingKey: lessThanPublic64.snarkProvingKey,
+        },
+      ],
+    ]);
     const predicates = [
       {
-        circuitId: lessThanPublic64.id,
-        circuitR1CS: lessThanPublic64.r1cs,
-        circuitWasm: lessThanPublic64.wasm,
-        snarkProvingKey: lessThanPublic64.snarkProvingKey,
-        private: [['lesser', '_:X']],
+        '@context': 'https://zkp-ld.org/context.jsonld',
+        type: 'Predicate',
+        circuit: 'circ:lessThan',
+        private: [
+          {
+            type: 'PrivateVariable',
+            var: 'lesser',
+            val: { '@id': '_:X' },
+          },
+        ],
         public: [
-          ['greater', '"1970-01-01"^^<http://www.w3.org/2001/XMLSchema#date>'], // same value must be rejected in less-than proof
+          {
+            type: 'PublicVariable',
+            var: 'greater',
+            val: {
+              '@value': '1970-01-01',
+              '@type': 'http://www.w3.org/2001/XMLSchema#date',
+            },
+          },
         ],
       },
     ];
@@ -202,6 +255,7 @@ describe('Proofs', () => {
       undefined,
       undefined,
       predicates,
+      circuits,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -223,19 +277,41 @@ describe('Proofs', () => {
     expect(verified.verified).toBeFalsy();
   });
 
-  test('deriveProof and verifyProof with range (less-than-equal) proof', async () => {
+  test('deriveProof and verifyProof with less-than-equal range proof', async () => {
     const vc2 = await sign(vcDraft2, keypairs, localDocumentLoader);
     const challenge = 'abcde';
 
+    const circuits = new Map([
+      [
+        lessThanEqPublic64.id,
+        {
+          r1cs: lessThanEqPublic64.r1cs,
+          wasm: lessThanEqPublic64.wasm,
+          provingKey: lessThanEqPublic64.snarkProvingKey,
+        },
+      ],
+    ]);
     const predicates = [
       {
-        circuitId: lessThanEqPublic64.id,
-        circuitR1CS: lessThanEqPublic64.r1cs,
-        circuitWasm: lessThanEqPublic64.wasm,
-        snarkProvingKey: lessThanEqPublic64.snarkProvingKey,
-        private: [['lesser', '_:X']],
+        '@context': 'https://zkp-ld.org/context.jsonld',
+        type: 'Predicate',
+        circuit: 'circ:lessThanEq',
+        private: [
+          {
+            type: 'PrivateVariable',
+            var: 'lesser',
+            val: { '@id': '_:X' },
+          },
+        ],
         public: [
-          ['greater', '"1970-01-01"^^<http://www.w3.org/2001/XMLSchema#date>'],
+          {
+            type: 'PublicVariable',
+            var: 'greater',
+            val: {
+              '@value': '1970-01-01',
+              '@type': 'http://www.w3.org/2001/XMLSchema#date',
+            },
+          },
         ],
       },
     ];
@@ -251,6 +327,7 @@ describe('Proofs', () => {
       undefined,
       undefined,
       predicates,
+      circuits,
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
