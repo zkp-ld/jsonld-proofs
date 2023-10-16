@@ -101,11 +101,13 @@ describe('Blind Signatures', () => {
       keypairs,
       vpContext,
       localDocumentLoader,
-      challenge_for_derive_proof,
-      domain,
-      secret,
-      blindSignRequest,
-      true,
+      {
+        challenge: challenge_for_derive_proof,
+        domain,
+        secret,
+        blindSignRequest,
+        withPpid: true,
+      },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -115,13 +117,10 @@ describe('Blind Signatures', () => {
       'ppid:uuGieOR_xSSZojovK3akZBNSQKvrDFvGto9-y70Cm_LmtO6BuMF-l_vO_kY5LhpYc',
     );
 
-    const proofVerified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
-      challenge_for_derive_proof,
+    const proofVerified = await verifyProof(vp, keypairs, localDocumentLoader, {
+      challenge: challenge_for_derive_proof,
       domain,
-    );
+    });
     expect(proofVerified.verified).toBeTruthy();
   });
 
@@ -146,9 +145,10 @@ describe('Blind Signatures', () => {
         keypairs,
         vpContext,
         localDocumentLoader,
-        challenge,
-        // undefined,
-        // secret,
+        {
+          challenge,
+          // secret
+        },
       ),
     ).rejects.toThrowError('RDFProofsError(MissingSecret)');
   });

@@ -13,10 +13,16 @@ import {
   VerifyResult,
   KeyPair,
   BlindSignRequest,
-  CircuitString,
 } from '@zkp-ld/rdf-proofs-wasm';
 import * as jsonld from 'jsonld';
-import { DocumentLoader, JsonValue, VC, VcPair } from './types';
+import {
+  DeriveProofOptions,
+  DocumentLoader,
+  JsonValue,
+  VC,
+  VcPair,
+  VerifyProofOptions,
+} from './types';
 import {
   deskolemizeNQuads,
   jsonldToRDF,
@@ -169,13 +175,7 @@ export const deriveProof = async (
   publicKeys: jsonld.JsonLdDocument,
   context: jsonld.ContextDefinition,
   documentLoader: DocumentLoader,
-  challenge?: string,
-  domain?: string,
-  secret?: Uint8Array,
-  blindSignRequest?: BlindSignRequest,
-  withPpid?: boolean,
-  predicates?: jsonld.JsonLdDocument[],
-  circuits?: Map<string, CircuitString>,
+  options?: DeriveProofOptions,
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
@@ -183,9 +183,9 @@ export const deriveProof = async (
   const deanonMap = new Map<string, string>();
   const publicKeysRDF = await jsonldToRDF(publicKeys, documentLoader);
 
-  const skolemizedPredicatesRDF = predicates
+  const skolemizedPredicatesRDF = options?.predicates
     ? await Promise.all(
-        predicates.map(
+        options.predicates.map(
           async (predicate) =>
             await jsonldToRDF(skolemizeVC(predicate), documentLoader),
         ),
@@ -311,13 +311,13 @@ export const deriveProof = async (
     vcPairs: vcPairsRDF,
     deanonMap,
     keyGraph: publicKeysRDF,
-    challenge,
-    domain,
-    secret,
-    blindSignRequest,
-    withPpid,
+    challenge: options?.challenge,
+    domain: options?.domain,
+    secret: options?.secret,
+    blindSignRequest: options?.blindSignRequest,
+    withPpid: options?.withPpid,
     predicates: predicatesRDF,
-    circuits,
+    circuits: options?.circuits,
   });
 
   const jsonldVP = await jsonldVPFromRDF(vp, context, documentLoader);
@@ -329,9 +329,7 @@ export const verifyProof = async (
   vp: jsonld.JsonLdDocument,
   publicKeys: jsonld.JsonLdDocument,
   documentLoader: DocumentLoader,
-  challenge?: string,
-  domain?: string,
-  snarkVerifyingKeys?: Map<string, string>,
+  options?: VerifyProofOptions,
 ): Promise<VerifyResult> => {
   await initializeWasm();
 
@@ -341,9 +339,7 @@ export const verifyProof = async (
   const verified = verifyProofWasm({
     vp: vpRDF,
     keyGraph: publicKeysRDF,
-    challenge,
-    domain,
-    snarkVerifyingKeys,
+    ...options,
   });
 
   return verified;

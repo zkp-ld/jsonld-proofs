@@ -38,17 +38,14 @@ describe('Proofs', () => {
       keypairs,
       vpContext,
       localDocumentLoader,
-      challenge,
+      { challenge },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
+    const verified = await verifyProof(vp, keypairs, localDocumentLoader, {
       challenge,
-    );
+    });
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
@@ -61,17 +58,14 @@ describe('Proofs', () => {
       keypairs,
       vpContext3,
       remoteDocumentLoader,
-      challenge,
+      { challenge },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      remoteDocumentLoader,
+    const verified = await verifyProof(vp, keypairs, remoteDocumentLoader, {
       challenge,
-    );
+    });
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
@@ -88,17 +82,14 @@ describe('Proofs', () => {
       keypairs,
       vpContext,
       localDocumentLoader,
-      challenge,
+      { challenge },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
+    const verified = await verifyProof(vp, keypairs, localDocumentLoader, {
       challenge,
-    );
+    });
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
@@ -111,17 +102,14 @@ describe('Proofs', () => {
       keypairs,
       vpContext4,
       localDocumentLoader,
-      challenge,
+      { challenge },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
+    const verified = await verifyProof(vp, keypairs, localDocumentLoader, {
       challenge,
-    );
+    });
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
@@ -170,30 +158,20 @@ describe('Proofs', () => {
       keypairs,
       vpContext,
       localDocumentLoader,
-      challenge,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      predicates,
-      circuits,
+      { challenge, predicates, circuits },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
+    const verified = await verifyProof(vp, keypairs, localDocumentLoader, {
       challenge,
-      undefined,
-      new Map([
+      snarkVerifyingKeys: new Map([
         [
           '<https://zkp-ld.org/circuit/lessThanPrvPub>',
           lessThanPrvPub64.provingKey,
         ],
       ]),
-    );
+    });
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
@@ -242,30 +220,20 @@ describe('Proofs', () => {
       keypairs,
       vpContext,
       localDocumentLoader,
-      challenge,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      predicates,
-      circuits,
+      { challenge, predicates, circuits },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
+    const verified = await verifyProof(vp, keypairs, localDocumentLoader, {
       challenge,
-      undefined,
-      new Map([
+      snarkVerifyingKeys: new Map([
         [
           '<https://zkp-ld.org/circuit/lessThanPrvPub>',
           lessThanPrvPub64.provingKey,
         ],
       ]),
-    );
+    });
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeFalsy();
   });
@@ -314,30 +282,20 @@ describe('Proofs', () => {
       keypairs,
       vpContext,
       localDocumentLoader,
-      challenge,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      predicates,
-      circuits,
+      { challenge, predicates, circuits },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
+    const verified = await verifyProof(vp, keypairs, localDocumentLoader, {
       challenge,
-      undefined,
-      new Map([
+      snarkVerifyingKeys: new Map([
         [
           '<https://zkp-ld.org/circuit/lessThanEqPrvPub>',
           lessThanEqPrvPub64.provingKey,
         ],
       ]),
-    );
+    });
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
@@ -420,24 +378,14 @@ describe('Proofs', () => {
       keypairs,
       vpContext,
       localDocumentLoader,
-      challenge,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      predicates,
-      circuits,
+      { challenge, predicates, circuits },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
-    const verified = await verifyProof(
-      vp,
-      keypairs,
-      localDocumentLoader,
+    const verified = await verifyProof(vp, keypairs, localDocumentLoader, {
       challenge,
-      undefined,
-      new Map([
+      snarkVerifyingKeys: new Map([
         [
           '<https://zkp-ld.org/circuit/lessThanPrvPub>',
           lessThanPrvPub64.provingKey,
@@ -447,7 +395,7 @@ describe('Proofs', () => {
           lessThanPubPrv64.provingKey,
         ],
       ]),
-    );
+    });
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
