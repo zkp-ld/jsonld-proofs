@@ -1,7 +1,8 @@
 import * as jsonld from 'jsonld';
 import { sign, deriveProof, verifyProof } from '../src/api';
-import lessThanEqPublic64 from './circuits/less_than_eq_public_64.json';
-import lessThanPublic64 from './circuits/less_than_public_64.json';
+import lessThanEqPrvPub64 from './circuits/less_than_eq_prv_pub_64.json';
+import lessThanPrvPub64 from './circuits/less_than_prv_pub_64.json';
+import lessThanPubPrv64 from './circuits/less_than_pub_prv_64.json';
 import { localDocumentLoader, remoteDocumentLoader } from './documentLoader';
 import disclosed0 from './example/disclosed0.json';
 import disclosed0HiddenLiteral from './example/disclosed0_hidden_literals.json';
@@ -131,11 +132,11 @@ describe('Proofs', () => {
 
     const circuits = new Map([
       [
-        lessThanPublic64.id,
+        lessThanPrvPub64.id,
         {
-          r1cs: lessThanPublic64.r1cs,
-          wasm: lessThanPublic64.wasm,
-          provingKey: lessThanPublic64.snarkProvingKey,
+          r1cs: lessThanPrvPub64.r1cs,
+          wasm: lessThanPrvPub64.wasm,
+          provingKey: lessThanPrvPub64.provingKey,
         },
       ],
     ]);
@@ -143,7 +144,7 @@ describe('Proofs', () => {
       {
         '@context': 'https://zkp-ld.org/context.jsonld',
         type: 'Predicate',
-        circuit: 'circ:lessThan',
+        circuit: 'circ:lessThanPrvPub',
         private: [
           {
             type: 'PrivateVariable',
@@ -152,14 +153,6 @@ describe('Proofs', () => {
           },
         ],
         public: [
-          // {
-          //   type: 'PublicVariable',
-          //   var: 'greater',
-          //   val: {
-          //     '@value': '1990-06-30',
-          //     '@type': 'http://www.w3.org/2001/XMLSchema#date',
-          //   },
-          // },
           {
             type: 'PublicVariable',
             var: 'greater',
@@ -196,8 +189,8 @@ describe('Proofs', () => {
       undefined,
       new Map([
         [
-          '<https://zkp-ld.org/circuit/lessThan>',
-          lessThanPublic64.snarkProvingKey,
+          '<https://zkp-ld.org/circuit/lessThanPrvPub>',
+          lessThanPrvPub64.provingKey,
         ],
       ]),
     );
@@ -211,11 +204,11 @@ describe('Proofs', () => {
 
     const circuits = new Map([
       [
-        lessThanPublic64.id,
+        lessThanPrvPub64.id,
         {
-          r1cs: lessThanPublic64.r1cs,
-          wasm: lessThanPublic64.wasm,
-          provingKey: lessThanPublic64.snarkProvingKey,
+          r1cs: lessThanPrvPub64.r1cs,
+          wasm: lessThanPrvPub64.wasm,
+          provingKey: lessThanPrvPub64.provingKey,
         },
       ],
     ]);
@@ -223,7 +216,7 @@ describe('Proofs', () => {
       {
         '@context': 'https://zkp-ld.org/context.jsonld',
         type: 'Predicate',
-        circuit: 'circ:lessThan',
+        circuit: 'circ:lessThanPrvPub',
         private: [
           {
             type: 'PrivateVariable',
@@ -268,8 +261,8 @@ describe('Proofs', () => {
       undefined,
       new Map([
         [
-          '<https://zkp-ld.org/circuit/lessThan>',
-          lessThanPublic64.snarkProvingKey,
+          '<https://zkp-ld.org/circuit/lessThanPrvPub>',
+          lessThanPrvPub64.provingKey,
         ],
       ]),
     );
@@ -283,11 +276,11 @@ describe('Proofs', () => {
 
     const circuits = new Map([
       [
-        lessThanEqPublic64.id,
+        lessThanEqPrvPub64.id,
         {
-          r1cs: lessThanEqPublic64.r1cs,
-          wasm: lessThanEqPublic64.wasm,
-          provingKey: lessThanEqPublic64.snarkProvingKey,
+          r1cs: lessThanEqPrvPub64.r1cs,
+          wasm: lessThanEqPrvPub64.wasm,
+          provingKey: lessThanEqPrvPub64.provingKey,
         },
       ],
     ]);
@@ -295,7 +288,7 @@ describe('Proofs', () => {
       {
         '@context': 'https://zkp-ld.org/context.jsonld',
         type: 'Predicate',
-        circuit: 'circ:lessThanEq',
+        circuit: 'circ:lessThanEqPrvPub',
         private: [
           {
             type: 'PrivateVariable',
@@ -340,8 +333,118 @@ describe('Proofs', () => {
       undefined,
       new Map([
         [
-          '<https://zkp-ld.org/circuit/lessThanEq>',
-          lessThanEqPublic64.snarkProvingKey,
+          '<https://zkp-ld.org/circuit/lessThanEqPrvPub>',
+          lessThanEqPrvPub64.provingKey,
+        ],
+      ]),
+    );
+    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
+    expect(verified.verified).toBeTruthy();
+  });
+
+  test('two less-than range proofs', async () => {
+    const vc0 = await sign(vc0HiddenLiteral, keypairs, localDocumentLoader);
+    const vc1 = await sign(vcDraft1, keypairs, localDocumentLoader);
+    const challenge = 'abcde';
+
+    const circuits = new Map([
+      [
+        lessThanPrvPub64.id,
+        {
+          r1cs: lessThanPrvPub64.r1cs,
+          wasm: lessThanPrvPub64.wasm,
+          provingKey: lessThanPrvPub64.provingKey,
+        },
+      ],
+      [
+        lessThanPubPrv64.id,
+        {
+          r1cs: lessThanPubPrv64.r1cs,
+          wasm: lessThanPubPrv64.wasm,
+          provingKey: lessThanPubPrv64.provingKey,
+        },
+      ],
+    ]);
+    const predicates = [
+      {
+        '@context': 'https://zkp-ld.org/context.jsonld',
+        type: 'Predicate',
+        circuit: 'circ:lessThanPrvPub',
+        private: [
+          {
+            type: 'PrivateVariable',
+            var: 'lesser',
+            val: { '@id': '_:xdate' },
+          },
+        ],
+        public: [
+          {
+            type: 'PublicVariable',
+            var: 'greater',
+            val: {
+              '@value': '2023-12-31T23:59:59Z',
+              '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
+            },
+          },
+        ],
+      },
+      {
+        '@context': 'https://zkp-ld.org/context.jsonld',
+        type: 'Predicate',
+        circuit: 'circ:lessThanPubPrv',
+        private: [
+          {
+            type: 'PrivateVariable',
+            var: 'greater',
+            val: { '@id': '_:xdate' },
+          },
+        ],
+        public: [
+          {
+            type: 'PublicVariable',
+            var: 'lesser',
+            val: {
+              '@value': '2020-01-01T00:00:00Z',
+              '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
+            },
+          },
+        ],
+      },
+    ];
+
+    const vp = await deriveProof(
+      [
+        { original: vc0, disclosed: disclosed0HiddenLiteral },
+        { original: vc1, disclosed: disclosed1 },
+      ],
+      keypairs,
+      vpContext,
+      localDocumentLoader,
+      challenge,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      predicates,
+      circuits,
+    );
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
+    expect(vp).not.toHaveProperty('error');
+
+    const verified = await verifyProof(
+      vp,
+      keypairs,
+      localDocumentLoader,
+      challenge,
+      undefined,
+      new Map([
+        [
+          '<https://zkp-ld.org/circuit/lessThanPrvPub>',
+          lessThanPrvPub64.provingKey,
+        ],
+        [
+          '<https://zkp-ld.org/circuit/lessThanPubPrv>',
+          lessThanPubPrv64.provingKey,
         ],
       ]),
     );
