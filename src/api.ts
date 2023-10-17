@@ -185,10 +185,17 @@ export const deriveProof = async (
 
   const skolemizedPredicatesRDF = options?.predicates
     ? await Promise.all(
-        options.predicates.map(
-          async (predicate) =>
-            await jsonldToRDF(skolemizeVC(predicate), documentLoader),
-        ),
+        options.predicates.map(async (predicate) => {
+          const expandedPredicate = await jsonld.expand(predicate, {
+            documentLoader,
+            safe: true,
+          });
+
+          return await jsonldToRDF(
+            skolemizeVC(expandedPredicate),
+            documentLoader,
+          );
+        }),
       )
     : undefined;
   const predicatesRDF = skolemizedPredicatesRDF
