@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0] - 2023-10-18
+
+### Added
+
+- Reflect the latest updates in `rdf-proofs-wasm` (and its underlying `rdf-proofs`)
+  - Add predicate proofs generation and verification
+
+### Changed
+
+- Interfaces of `deriveProof` and `verifyProof`
+- Upgrade dependencies
+
 ## [0.8.2] - 2023-10-02
 
 ### Fixed
