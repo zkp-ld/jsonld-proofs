@@ -137,7 +137,7 @@ describe('Proofs', () => {
           {
             type: 'PrivateVariable',
             var: 'lesser',
-            val: { '@id': '_:Y' },
+            val: '_:Y',
           },
         ],
         public: [
@@ -146,7 +146,7 @@ describe('Proofs', () => {
             var: 'greater',
             val: {
               '@value': '50000',
-              '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+              '@type': 'xsd:integer',
             },
           },
         ],
@@ -167,7 +167,7 @@ describe('Proofs', () => {
       challenge,
       snarkVerifyingKeys: new Map([
         [
-          '<https://zkp-ld.org/circuit/lessThanPrvPub>',
+          'https://zkp-ld.org/circuit/lessThanPrvPub',
           lessThanPrvPub64.provingKey,
         ],
       ]),
@@ -199,7 +199,7 @@ describe('Proofs', () => {
           {
             type: 'PrivateVariable',
             var: 'lesser',
-            val: { '@id': '_:X' },
+            val: '_:X',
           },
         ],
         public: [
@@ -229,7 +229,7 @@ describe('Proofs', () => {
       challenge,
       snarkVerifyingKeys: new Map([
         [
-          '<https://zkp-ld.org/circuit/lessThanPrvPub>',
+          'https://zkp-ld.org/circuit/lessThanPrvPub',
           lessThanPrvPub64.provingKey,
         ],
       ]),
@@ -261,7 +261,7 @@ describe('Proofs', () => {
           {
             type: 'PrivateVariable',
             var: 'lesser',
-            val: { '@id': '_:X' },
+            val: '_:X',
           },
         ],
         public: [
@@ -291,7 +291,7 @@ describe('Proofs', () => {
       challenge,
       snarkVerifyingKeys: new Map([
         [
-          '<https://zkp-ld.org/circuit/lessThanEqPrvPub>',
+          'https://zkp-ld.org/circuit/lessThanEqPrvPub',
           lessThanEqPrvPub64.provingKey,
         ],
       ]),
@@ -332,7 +332,7 @@ describe('Proofs', () => {
           {
             type: 'PrivateVariable',
             var: 'lesser',
-            val: { '@id': '_:xdate' },
+            val: '_:xdate',
           },
         ],
         public: [
@@ -354,7 +354,7 @@ describe('Proofs', () => {
           {
             type: 'PrivateVariable',
             var: 'greater',
-            val: { '@id': '_:xdate' },
+            val: '_:xdate',
           },
         ],
         public: [
@@ -387,11 +387,11 @@ describe('Proofs', () => {
       challenge,
       snarkVerifyingKeys: new Map([
         [
-          '<https://zkp-ld.org/circuit/lessThanPrvPub>',
+          'https://zkp-ld.org/circuit/lessThanPrvPub',
           lessThanPrvPub64.provingKey,
         ],
         [
-          '<https://zkp-ld.org/circuit/lessThanPubPrv>',
+          'https://zkp-ld.org/circuit/lessThanPubPrv',
           lessThanPubPrv64.provingKey,
         ],
       ]),

@@ -222,6 +222,7 @@ const _skolemizeJSONLD = (node: JsonValue) => {
   }
 };
 
+// input `vc` must be *expanded* JSON-LD
 export const skolemizeVC = (
   vc: jsonldSpec.JsonLdArray | jsonld.JsonLdDocument,
 ) => {
