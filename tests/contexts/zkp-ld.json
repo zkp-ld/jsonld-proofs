@@ -4,6 +4,7 @@
     "@protected": true,
     "id": "@id",
     "type": "@type",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
     "ppid": {
       "@id": "https://zkp-ld.org/.well-known/genid/",
       "@prefix": true
