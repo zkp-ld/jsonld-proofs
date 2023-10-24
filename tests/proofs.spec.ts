@@ -1,4 +1,5 @@
 import * as jsonld from 'jsonld';
+import { describe, expect, test } from 'vitest';
 import { sign, deriveProof, verifyProof } from '../src/api';
 import lessThanEqPrvPub64 from './circuits/less_than_eq_prv_pub_64.json';
 import lessThanPrvPub64 from './circuits/less_than_prv_pub_64.json';
