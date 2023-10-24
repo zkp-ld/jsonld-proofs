@@ -313,8 +313,6 @@ export const deriveProof = async (
     });
   }
 
-  console.dir(vcPairsRDF);
-  console.dir(deanonMap);
   const vp = deriveProofWasm({
     vcPairs: vcPairsRDF,
     deanonMap,
