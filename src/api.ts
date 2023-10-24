@@ -191,10 +191,7 @@ export const deriveProof = async (
             safe: true,
           });
 
-          return await jsonldToRDF(
-            skolemizeVC(expandedPredicate),
-            documentLoader,
-          );
+          return jsonldToRDF(skolemizeVC(expandedPredicate), documentLoader);
         }),
       )
     : undefined;
@@ -270,11 +267,11 @@ export const deriveProof = async (
       delete node['@value'];
 
       const deanonMapEntry = deanonMap.get(value);
-      if (deanonMapEntry == undefined) {
+      if (deanonMapEntry === undefined) {
         throw new Error(`deanonMap[${value}] has no value`);
       }
 
-      if (typeof typ == 'string') {
+      if (typeof typ === 'string') {
         deanonMap.set(value, `${deanonMapEntry}^^<${typ}>`);
       } else if (typ === undefined) {
         deanonMap.set(value, `${deanonMapEntry}`);
