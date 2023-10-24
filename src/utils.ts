@@ -6,6 +6,8 @@ import { DocumentLoader, JsonValue, VC, VCDocument } from './types';
 
 const PROOF = 'https://w3id.org/security#proof';
 const DATA_INTEGRITY_CONTEXT = 'https://www.w3.org/ns/data-integrity/v1';
+const SKOLEM_PREFIX = 'urn:bnid:';
+const SKOLEM_REGEX = /[<"]urn:bnid:([^>"]+)[>"]/g;
 
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10);
 
@@ -22,7 +24,7 @@ export const jsonldToRDF = async (
 export const vcToRDF = async (vc: VC, documentLoader: DocumentLoader) => {
   const clonedVC = JSON.parse(JSON.stringify(vc)) as VC;
 
-  const proof = clonedVC.proof;
+  const { proof } = clonedVC;
   const document = clonedVC as VCDocument;
   delete document.proof;
 
@@ -70,7 +72,7 @@ export const expandedVCToRDF = async (
   return { documentRDF, proofRDF };
 };
 
-const _diffJSONLD = (
+const diffJSONLD = (
   node: JsonValue,
   path: (string | number)[],
   deanonMap: Map<string, string>,
@@ -86,7 +88,7 @@ const _diffJSONLD = (
         throw new TypeError('json-diff error');
       }
       if (item[0] === '~') {
-        _diffJSONLD(
+        diffJSONLD(
           item[1],
           updatedPath,
           deanonMap,
@@ -153,7 +155,7 @@ const _diffJSONLD = (
         const updatedPath = path.concat([key]);
         const value = node[key];
         if (typeof value === 'object') {
-          _diffJSONLD(
+          diffJSONLD(
             value,
             updatedPath,
             deanonMap,
@@ -179,7 +181,7 @@ export const diffVC = (
   const maskedIDMap = new Map<(string | number)[], string>();
   const maskedLiteralMap = new Map<(string | number)[], string>();
 
-  _diffJSONLD(
+  diffJSONLD(
     diffObj,
     [],
     deanonMap,
@@ -191,14 +193,11 @@ export const diffVC = (
   return { deanonMap, skolemIDMap, maskedIDMap, maskedLiteralMap };
 };
 
-const SKOLEM_PREFIX = 'urn:bnid:';
-const SKOLEM_REGEX = /[<"]urn:bnid:([^>"]+)[>"]/g;
-
-const _skolemizeJSONLD = (node: JsonValue) => {
+const skolemizeJSONLD = (node: JsonValue) => {
   if (Array.isArray(node)) {
     node.forEach((item) => {
       if (typeof item === 'object' && item !== null) {
-        _skolemizeJSONLD(item);
+        skolemizeJSONLD(item);
       }
     });
   } else if (typeof node === 'object' && node !== null) {
@@ -208,7 +207,7 @@ const _skolemizeJSONLD = (node: JsonValue) => {
         node[key] !== undefined &&
         key !== '@context'
       ) {
-        _skolemizeJSONLD(node[key]);
+        skolemizeJSONLD(node[key]);
       } else if (key === '@id') {
         const value = node['@id'];
         if (typeof value === 'string' && value.startsWith('_:')) {
@@ -227,7 +226,7 @@ export const skolemizeVC = (
   vc: jsonldSpec.JsonLdArray | jsonld.JsonLdDocument,
 ) => {
   const output = JSON.parse(JSON.stringify(vc)) as JsonValue;
-  _skolemizeJSONLD(output);
+  skolemizeJSONLD(output);
 
   return output as jsonldSpec.JsonLdArray;
 };
