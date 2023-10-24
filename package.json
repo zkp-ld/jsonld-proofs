@@ -36,10 +36,8 @@
     "nanoid": "^5.0.1"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.3",
     "@types/json-diff": "^1.0.0",
     "@types/jsonld": "./@types/jsonld",
-    "@types/node": "^20.6.3",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "eslint": "^8.47.0",
     "eslint-config-prettier": "^9.0.0",
