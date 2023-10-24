@@ -1,4 +1,5 @@
 import * as jsonld from 'jsonld';
+import { describe, expect, test } from 'vitest';
 import {
   requestBlindSign,
   blindSign,
@@ -31,8 +32,9 @@ describe('Blind Signatures', () => {
     );
     expect(commitment).toBeDefined();
     expect(pokForCommitment).toBeDefined();
+
+    // type guard
     if (pokForCommitment === undefined) {
-      fail;
       return;
     }
 

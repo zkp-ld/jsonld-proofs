@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { sign, verify, keyGen } from '../src/api';
 import { VC } from '../src/types';
 import { localDocumentLoader, remoteDocumentLoader } from './documentLoader';
