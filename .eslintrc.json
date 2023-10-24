@@ -1,90 +1,23 @@
 {
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint"
+  ],
   "env": {
     "es2022": true,
     "node": true
   },
-  "extends": [
-    "eslint:recommended",
-    "plugin:import/recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    //    "standard-with-typescript",
-    "prettier"
-  ],
-  "overrides": [],
   "parserOptions": {
     "ecmaVersion": "latest",
     "tsconfigRootDir": ".",
-    "project": [
-      "./tsconfig.eslint.json"
-    ],
+    "project": "./tsconfig.eslint.json",
     "sourceType": "module"
   },
-  "plugins": [
-    "@typescript-eslint",
-    "eslint-plugin-tsdoc"
-  ],
-  "rules": {
-    "import/no-unresolved": "off",
-    "@typescript-eslint/key-spacing": "off",
-    "padding-line-between-statements": [
-      "error",
-      {
-        "blankLine": "always",
-        "prev": "*",
-        "next": "return"
-      }
-    ],
-    "@typescript-eslint/no-misused-promises": [
-      "error",
-      {
-        "checksVoidReturn": false
-      }
-    ],
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      {
-        "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_"
-      }
-    ],
-    "import/order": [
-      "error",
-      {
-        "groups": [
-          "builtin",
-          "external",
-          "internal",
-          "parent",
-          "sibling",
-          "object",
-          "index"
-        ],
-        "pathGroups": [
-          {
-            "pattern": "{react,react-dom/**}",
-            "group": "builtin",
-            "position": "before"
-          },
-          {
-            "pattern": "{[A-Z]*,**/[A-Z]*}",
-            "group": "internal",
-            "position": "after"
-          },
-          {
-            "pattern": "./**.module.css",
-            "group": "index",
-            "position": "after"
-          }
-        ],
-        "pathGroupsExcludedImportTypes": [
-          "builtin"
-        ],
-        "alphabetize": {
-          "order": "asc"
-        }
-      }
-    ],
-    "tsdoc/syntax": "warn"
-  }
+  "extends": [
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "prettier"
+  ]
 }
