@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */ // TODO: remove this
 import {
   keyGen as keyGenWasm,
   sign as signWasm,
@@ -24,7 +25,7 @@ import {
   VerifyProofOptions,
 } from './types';
 import {
-  deskolemizeNQuads,
+  deskolemizeTerm,
   jsonldToRDF,
   diffVC,
   jsonldVPFromRDF,
@@ -33,6 +34,7 @@ import {
   traverseJSON,
   skolemizeVC,
   jsonldProofFromRDF,
+  deskolemizeString,
 } from './utils';
 
 export const keyGen = async (): Promise<KeyPair> => {
@@ -191,12 +193,15 @@ export const deriveProof = async (
             safe: true,
           });
 
-          return jsonldToRDF(skolemizeVC(expandedPredicate), documentLoader);
+          return jsonldToRDF(
+            skolemizeVC(expandedPredicate, true),
+            documentLoader,
+          );
         }),
       )
     : undefined;
   const predicatesRDF = skolemizedPredicatesRDF
-    ? skolemizedPredicatesRDF.map((predicate) => deskolemizeNQuads(predicate))
+    ? skolemizedPredicatesRDF.map((predicate) => deskolemizeTerm(predicate))
     : undefined;
 
   for (const { original, disclosed } of vcPairs) {
@@ -209,19 +214,18 @@ export const deriveProof = async (
       safe: true,
     });
 
-    const skolemizedExpandedOriginalVC = skolemizeVC(expandedOriginalVC);
+    const skolemizedExpandedOriginalVC = skolemizeVC(expandedOriginalVC, true);
+    const skolemizedExpandedDisclosedVC = skolemizeVC(
+      expandedDisclosedVC,
+      false,
+    );
 
     // compare VC and disclosed VC to get local deanon map and skolem ID map
-    const vcDiffResult = diffVC(
-      skolemizedExpandedOriginalVC,
-      expandedDisclosedVC,
-    );
     const {
       deanonMap: localDeanonMap,
       skolemIDMap,
-      maskedIDMap,
       maskedLiteralMap,
-    } = vcDiffResult;
+    } = diffVC(skolemizedExpandedOriginalVC, skolemizedExpandedDisclosedVC);
 
     // update global deanonMap
     for (const [k, v] of localDeanonMap.entries()) {
@@ -237,44 +241,42 @@ export const deriveProof = async (
 
     // inject Skolem IDs into disclosed VC
     for (const [path, skolemID] of skolemIDMap) {
-      const node = traverseJSON(expandedDisclosedVC as JsonValue, path);
+      const node = traverseJSON(
+        skolemizedExpandedDisclosedVC as JsonValue,
+        path,
+      );
       node['@id'] = skolemID;
     }
 
-    // inject masked ID into disclosed VC
-    for (const [path, masked] of maskedIDMap) {
-      const node = traverseJSON(expandedDisclosedVC as JsonValue, path);
-      node['@id'] = masked;
-    }
-
     // inject masked Literal into disclosed VC
-    for (const [path, masked] of maskedLiteralMap) {
-      const node = traverseJSON(expandedDisclosedVC as JsonValue, path);
+    for (const path of maskedLiteralMap) {
+      const node = traverseJSON(
+        skolemizedExpandedDisclosedVC as JsonValue,
+        path,
+      );
 
-      let value = node['@value'];
+      const value = node['@value'];
       if (typeof value !== 'string') {
         throw new TypeError('invalid disclosed VC'); // TODO: more detail message
-      }
-      // add prefix `_:` if not exist
-      if (!value.startsWith('_:')) {
-        value = `_:${value}`;
       }
 
       const typ = node['@type'];
 
-      node['@id'] = masked;
+      // replace value node with id node
+      node['@id'] = value;
       delete node['@type'];
       delete node['@value'];
 
-      const deanonMapEntry = deanonMap.get(value);
+      const deskolemizedValue = deskolemizeString(value);
+      const deanonMapEntry = deanonMap.get(deskolemizedValue);
       if (deanonMapEntry === undefined) {
         throw new Error(`deanonMap[${value}] has no value`);
       }
 
       if (typeof typ === 'string') {
-        deanonMap.set(value, `${deanonMapEntry}^^<${typ}>`);
+        deanonMap.set(deskolemizedValue, `${deanonMapEntry}^^<${typ}>`);
       } else if (typ === undefined) {
-        deanonMap.set(value, `${deanonMapEntry}`);
+        deanonMap.set(deskolemizedValue, `${deanonMapEntry}`);
       } else {
         throw new TypeError('invalid disclosed VC'); // TODO: more detail message
       }
@@ -288,7 +290,7 @@ export const deriveProof = async (
     const {
       documentRDF: skolemizedDisclosedDocumentRDF,
       proofRDF: skolemizedDisclosedProofRDF,
-    } = await expandedVCToRDF(expandedDisclosedVC, documentLoader);
+    } = await expandedVCToRDF(skolemizedExpandedDisclosedVC, documentLoader);
 
     // deskolemize N-Quads
     const [
@@ -301,7 +303,7 @@ export const deriveProof = async (
       skolemizedProofRDF,
       skolemizedDisclosedDocumentRDF,
       skolemizedDisclosedProofRDF,
-    ].map(deskolemizeNQuads);
+    ].map(deskolemizeTerm);
 
     vcPairsRDF.push({
       originalDocument: originalDocumentRDF,
@@ -311,6 +313,8 @@ export const deriveProof = async (
     });
   }
 
+  console.dir(vcPairsRDF);
+  console.dir(deanonMap);
   const vp = deriveProofWasm({
     vcPairs: vcPairsRDF,
     deanonMap,

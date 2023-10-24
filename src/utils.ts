@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */ // TODO: remove this
 import { diff } from 'json-diff';
 import * as jsonld from 'jsonld';
 import * as jsonldSpec from 'jsonld/jsonld-spec';
@@ -10,6 +11,9 @@ const SKOLEM_PREFIX = 'urn:bnid:';
 const SKOLEM_REGEX = /[<"]urn:bnid:([^>"]+)[>"]/g;
 
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10);
+
+export const deskolemizeString = (s: string) => s.replace(SKOLEM_PREFIX, '_:');
+export const deskolemizeTerm = (t: string) => t.replace(SKOLEM_REGEX, '_:$1');
 
 export const jsonldToRDF = async (
   jsonldDoc: jsonld.JsonLdDocument,
@@ -77,8 +81,7 @@ const diffJSONLD = (
   path: (string | number)[],
   deanonMap: Map<string, string>,
   skolemIDMap: Map<(string | number)[], string>,
-  maskedIDMap: Map<(string | number)[], string>,
-  maskedLiteralMap: Map<(string | number)[], string>,
+  maskedLiteralPaths: (string | number)[][],
 ) => {
   if (Array.isArray(node)) {
     node.forEach((item, i) => {
@@ -93,8 +96,7 @@ const diffJSONLD = (
           updatedPath,
           deanonMap,
           skolemIDMap,
-          maskedIDMap,
-          maskedLiteralMap,
+          maskedLiteralPaths,
         );
       }
     });
@@ -108,15 +110,16 @@ const diffJSONLD = (
           '__old' in oldAndNew &&
           '__new' in oldAndNew
         ) {
+          // eslint-disable-next-line @typescript-eslint/dot-notation
           const orig = oldAndNew['__old'] as string;
+          // eslint-disable-next-line @typescript-eslint/dot-notation
           const masked = oldAndNew['__new'] as string;
-          if (!masked.startsWith('_:')) {
+          if (!masked.startsWith(SKOLEM_PREFIX)) {
             throw new TypeError(
               `json-diff error: replacement value \`${masked}\` must start with \`_:\``,
             );
           }
-          maskedIDMap.set(path, `${SKOLEM_PREFIX}${masked.substring(2)}`);
-          deanonMap.set(masked, `<${orig}>`);
+          deanonMap.set(deskolemizeString(masked), `<${orig}>`);
         } else {
           throw new TypeError('json-diff error: __old or __new do not exist');
         }
@@ -128,15 +131,17 @@ const diffJSONLD = (
           '__old' in oldAndNew &&
           '__new' in oldAndNew
         ) {
+          // eslint-disable-next-line @typescript-eslint/dot-notation
           const orig = oldAndNew['__old'] as string;
+          // eslint-disable-next-line @typescript-eslint/dot-notation
           const masked = oldAndNew['__new'] as string;
-          if (!masked.startsWith('_:')) {
+          if (!masked.startsWith(SKOLEM_PREFIX)) {
             throw new TypeError(
               `json-diff error: replacement value \`${masked}\` must start with \`_:\``,
             );
           }
-          maskedLiteralMap.set(path, `${SKOLEM_PREFIX}${masked.substring(2)}`);
-          deanonMap.set(masked, `"${orig}"`);
+          maskedLiteralPaths.push(path);
+          deanonMap.set(deskolemizeString(masked), `"${orig}"`);
         } else {
           throw new TypeError('json-diff error: __old or __new do not exist');
         }
@@ -160,8 +165,7 @@ const diffJSONLD = (
             updatedPath,
             deanonMap,
             skolemIDMap,
-            maskedIDMap,
-            maskedLiteralMap,
+            maskedLiteralPaths,
           );
         }
       }
@@ -178,26 +182,18 @@ export const diffVC = (
   const diffObj = diff(vc, disclosed) as JsonValue;
   const deanonMap = new Map<string, string>();
   const skolemIDMap = new Map<(string | number)[], string>();
-  const maskedIDMap = new Map<(string | number)[], string>();
-  const maskedLiteralMap = new Map<(string | number)[], string>();
+  const maskedLiteralPaths: (string | number)[][] = [];
 
-  diffJSONLD(
-    diffObj,
-    [],
-    deanonMap,
-    skolemIDMap,
-    maskedIDMap,
-    maskedLiteralMap,
-  );
+  diffJSONLD(diffObj, [], deanonMap, skolemIDMap, maskedLiteralPaths);
 
-  return { deanonMap, skolemIDMap, maskedIDMap, maskedLiteralMap };
+  return { deanonMap, skolemIDMap, maskedLiteralMap: maskedLiteralPaths };
 };
 
-const skolemizeJSONLD = (node: JsonValue) => {
+const skolemizeJSONLD = (node: JsonValue, includeOmittedId: boolean) => {
   if (Array.isArray(node)) {
     node.forEach((item) => {
       if (typeof item === 'object' && item !== null) {
-        skolemizeJSONLD(item);
+        skolemizeJSONLD(item, includeOmittedId);
       }
     });
   } else if (typeof node === 'object' && node !== null) {
@@ -207,15 +203,18 @@ const skolemizeJSONLD = (node: JsonValue) => {
         node[key] !== undefined &&
         key !== '@context'
       ) {
-        skolemizeJSONLD(node[key]);
-      } else if (key === '@id') {
-        const value = node['@id'];
+        skolemizeJSONLD(node[key], includeOmittedId);
+      } else {
+        const value = node[key];
         if (typeof value === 'string' && value.startsWith('_:')) {
-          node['@id'] = `${SKOLEM_PREFIX}${value.slice(2)}`;
+          node[key] = `${SKOLEM_PREFIX}${value.slice(2)}`;
         }
       }
     }
-    if (!('@value' in node || '@id' in node || '@list' in node)) {
+    if (
+      includeOmittedId &&
+      !('@value' in node || '@id' in node || '@list' in node)
+    ) {
       node['@id'] = `${SKOLEM_PREFIX}${nanoid()}`;
     }
   }
@@ -224,15 +223,13 @@ const skolemizeJSONLD = (node: JsonValue) => {
 // input `vc` must be *expanded* JSON-LD
 export const skolemizeVC = (
   vc: jsonldSpec.JsonLdArray | jsonld.JsonLdDocument,
+  includeOmittedId: boolean,
 ) => {
   const output = JSON.parse(JSON.stringify(vc)) as JsonValue;
-  skolemizeJSONLD(output);
+  skolemizeJSONLD(output, includeOmittedId);
 
   return output as jsonldSpec.JsonLdArray;
 };
-
-export const deskolemizeNQuads = (nquads: string) =>
-  nquads.replace(SKOLEM_REGEX, '_:$1');
 
 export const jsonldProofFromRDF = async (
   proofRDF: string,
