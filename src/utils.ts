@@ -2,7 +2,14 @@ import { diff } from 'json-diff';
 import * as jsonld from 'jsonld';
 import * as jsonldSpec from 'jsonld/jsonld-spec';
 import { customAlphabet } from 'nanoid';
-import { DocumentLoader, JsonValue, VC, VCDocument, VcPair } from './types';
+import {
+  DocumentLoader,
+  JsonObject,
+  JsonValue,
+  VC,
+  VCDocument,
+  VcPair,
+} from './types';
 
 const PROOF = 'https://w3id.org/security#proof';
 const DATA_INTEGRITY_CONTEXT = 'https://www.w3.org/ns/data-integrity/v1';
@@ -24,35 +31,43 @@ export const jsonldToRDF = async (
     safe: true,
   })) as unknown as string;
 
-const skolemizeJSONLD = (node: JsonValue, includeOmittedId: boolean) => {
-  if (Array.isArray(node)) {
-    node.forEach((item) => {
-      if (typeof item === 'object' && item !== null) {
-        skolemizeJSONLD(item, includeOmittedId);
-      }
-    });
-  } else if (typeof node === 'object' && node !== null) {
-    for (const key in node) {
+const skolemizeJSONLD = (
+  json: JsonValue,
+  includeOmittedId: boolean,
+): JsonValue => {
+  let newJson = JSON.parse(JSON.stringify(json)) as JsonValue; // create a copy of the input JSON
+
+  if (Array.isArray(newJson)) {
+    newJson = newJson.map((item: JsonValue) =>
+      typeof item === 'object' && item != null
+        ? skolemizeJSONLD(item, includeOmittedId)
+        : item,
+    );
+  } else if (typeof newJson === 'object' && newJson != null) {
+    const obj: JsonObject = newJson;
+    Object.keys(obj).forEach((key) => {
       if (
-        typeof node[key] === 'object' &&
-        node[key] !== undefined &&
-        key !== '@context'
+        key !== '@context' &&
+        typeof obj[key] === 'object' &&
+        obj[key] != null
       ) {
-        skolemizeJSONLD(node[key], includeOmittedId);
+        obj[key] = skolemizeJSONLD(obj[key], includeOmittedId);
       } else {
-        const value = node[key];
+        const value: JsonValue = obj[key];
         if (typeof value === 'string' && value.startsWith('_:')) {
-          node[key] = `${SKOLEM_PREFIX}${value.slice(2)}`;
+          obj[key] = `${SKOLEM_PREFIX}${value.slice(2)}`;
         }
       }
-    }
+    });
     if (
       includeOmittedId &&
-      !('@value' in node || '@id' in node || '@list' in node)
+      !('@value' in newJson || '@id' in newJson || '@list' in newJson)
     ) {
-      node['@id'] = `${SKOLEM_PREFIX}${nanoid()}`;
+      newJson['@id'] = `${SKOLEM_PREFIX}${nanoid()}`;
     }
   }
+
+  return newJson; // Return the modified copy of the input JSON
 };
 
 // input `vc` must be *expanded* JSON-LD
@@ -61,12 +76,12 @@ const skolemizeVC = (
   includeOmittedId?: boolean,
 ) => {
   const output = JSON.parse(JSON.stringify(vc)) as JsonValue;
-  skolemizeJSONLD(
+  const skolemizedOutput = skolemizeJSONLD(
     output,
     includeOmittedId === undefined ? true : includeOmittedId,
   );
 
-  return output as jsonldSpec.JsonLdArray;
+  return skolemizedOutput as jsonldSpec.JsonLdArray;
 };
 
 const skolemizeAndExpandVcPair = async (
