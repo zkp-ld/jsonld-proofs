@@ -27,7 +27,7 @@ import {
   DeriveProofOptions,
   DocumentLoader,
   VC,
-  VcPair,
+  VCPair,
   VerifyProofOptions,
 } from './types';
 import {
@@ -65,8 +65,7 @@ export const sign = async (
 ): Promise<VC> => {
   await initializeWasm();
 
-  const vcRDF = await vcToRDF(vc, documentLoader);
-  const { document, documentRDF, proofRDF } = vcRDF;
+  const { document, documentRDF, proofRDF } = await vcToRDF(vc, documentLoader);
 
   const keyPairRDF = await jsonldToRDF(keyPair, documentLoader);
 
@@ -92,8 +91,7 @@ export const verify = async (
 ): Promise<VerifyResult> => {
   await initializeWasm();
 
-  const vcRDF = await vcToRDF(vc, documentLoader);
-  const { documentRDF, proofRDF } = vcRDF;
+  const { documentRDF, proofRDF } = await vcToRDF(vc, documentLoader);
 
   const publicKeyRDF = await jsonldToRDF(publicKey, documentLoader);
 
@@ -160,8 +158,7 @@ export const blindSign = async (
 ): Promise<VC> => {
   await initializeWasm();
 
-  const vcRDF = await vcToRDF(vc, documentLoader);
-  const { document, documentRDF, proofRDF } = vcRDF;
+  const { document, documentRDF, proofRDF } = await vcToRDF(vc, documentLoader);
 
   const keyPairRDF = await jsonldToRDF(keyPair, documentLoader);
 
@@ -192,8 +189,7 @@ export const unblind = async (
 ): Promise<VC> => {
   await initializeWasm();
 
-  const vcRDF = await vcToRDF(vc, documentLoader);
-  const { document, documentRDF, proofRDF } = vcRDF;
+  const { document, documentRDF, proofRDF } = await vcToRDF(vc, documentLoader);
 
   const unblindedProofRDF = unblindWasm(documentRDF, proofRDF, blinding);
   const proof = await jsonldProofFromRDF(unblindedProofRDF, documentLoader);
@@ -219,8 +215,7 @@ export const blindVerify = async (
 ): Promise<VerifyResult> => {
   await initializeWasm();
 
-  const vcRDF = await vcToRDF(vc, documentLoader);
-  const { documentRDF, proofRDF } = vcRDF;
+  const { documentRDF, proofRDF } = await vcToRDF(vc, documentLoader);
 
   const publicKeyRDF = await jsonldToRDF(publicKey, documentLoader);
 
@@ -239,7 +234,7 @@ export const blindVerify = async (
  * @returns A Promise that resolves to the derived proof as a JSON-LD document.
  */
 export const deriveProof = async (
-  vcPairs: VcPair[],
+  vcPairs: VCPair[],
   publicKeys: jsonld.JsonLdDocument,
   context: jsonld.ContextDefinition,
   documentLoader: DocumentLoader,
@@ -247,7 +242,7 @@ export const deriveProof = async (
 ): Promise<jsonld.JsonLdDocument> => {
   await initializeWasm();
 
-  const { vcPairsRDF, deanonMap } = await getRDFAndDeanonMaps(
+  const { vcPairRDFs, deanonMap } = await getRDFAndDeanonMaps(
     vcPairs,
     documentLoader,
   );
@@ -259,7 +254,7 @@ export const deriveProof = async (
     : undefined;
 
   const vp = deriveProofWasm({
-    vcPairs: vcPairsRDF,
+    vcPairs: vcPairRDFs,
     deanonMap,
     keyGraph: publicKeysRDF,
     challenge: options?.challenge,
