@@ -10,4 +10,4 @@ export {
   deriveProof,
   verifyProof,
 } from './api';
-export { VC, VcPair } from './types';
+export { VC, VCPair } from './types';

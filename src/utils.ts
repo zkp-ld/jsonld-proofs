@@ -3,28 +3,37 @@ import * as jsonld from 'jsonld';
 import * as jsonldSpec from 'jsonld/jsonld-spec';
 import { customAlphabet } from 'nanoid';
 import {
+  DiffVCResult,
   DocumentLoader,
+  ExpandedJsonldPair,
   JsonObject,
   JsonValue,
   VC,
   VCDocument,
-  VcPair,
+  VCPair,
+  VCPairsWithDeanonMap,
+  VCRDF,
 } from './types';
 
 const PROOF = 'https://w3id.org/security#proof';
 const DATA_INTEGRITY_CONTEXT = 'https://www.w3.org/ns/data-integrity/v1';
 const SKOLEM_PREFIX = 'urn:bnid:';
 const SKOLEM_REGEX = /[<"]urn:bnid:([^>"]+)[>"]/g;
-
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10);
 
-export const deskolemizeString = (s: string) => s.replace(SKOLEM_PREFIX, '_:');
-export const deskolemizeTerm = (t: string) => t.replace(SKOLEM_REGEX, '_:$1');
+const deskolemizeString = (s: string): string => s.replace(SKOLEM_PREFIX, '_:');
+const deskolemizeTerm = (t: string): string => t.replace(SKOLEM_REGEX, '_:$1');
 
+/**
+ * Converts a JSON-LD document to RDF format.
+ * @param jsonldDoc The JSON-LD document to convert.
+ * @param documentLoader The document loader used to resolve external references.
+ * @returns A Promise that resolves to the RDF representation of the JSON-LD document.
+ */
 export const jsonldToRDF = async (
   jsonldDoc: jsonld.JsonLdDocument,
   documentLoader: DocumentLoader,
-) =>
+): Promise<string> =>
   (await jsonld.toRDF(jsonldDoc, {
     format: 'application/n-quads',
     documentLoader,
@@ -70,12 +79,11 @@ const skolemizeJSONLD = (
   return newJson; // Return the modified copy of the input JSON
 };
 
-// input `vc` must be *expanded* JSON-LD
-const skolemizeVC = (
-  vc: jsonldSpec.JsonLdArray | jsonld.JsonLdDocument,
+const skolemizeExpandedVC = (
+  expandedVC: jsonldSpec.JsonLdArray | jsonld.JsonLdDocument,
   includeOmittedId?: boolean,
 ) => {
-  const output = JSON.parse(JSON.stringify(vc)) as JsonValue;
+  const output = JSON.parse(JSON.stringify(expandedVC)) as JsonValue;
   const skolemizedOutput = skolemizeJSONLD(
     output,
     includeOmittedId === undefined ? true : includeOmittedId,
@@ -85,21 +93,28 @@ const skolemizeVC = (
 };
 
 const skolemizeAndExpandVcPair = async (
-  vcPair: VcPair,
+  vcPair: VCPair,
   documentLoader: DocumentLoader,
-) => {
+): Promise<ExpandedJsonldPair> => {
   const expandedOriginalVC = await jsonld.expand(vcPair.original, {
     documentLoader,
     safe: true,
   });
+  const skolemizedAndExpandedOriginalVC =
+    skolemizeExpandedVC(expandedOriginalVC);
+
   const expandedDisclosedVC = await jsonld.expand(vcPair.disclosed, {
     documentLoader,
     safe: true,
   });
+  const skolemizedAndExpandedDisclosedVC = skolemizeExpandedVC(
+    expandedDisclosedVC,
+    false,
+  );
 
   return {
-    original: skolemizeVC(expandedOriginalVC),
-    disclosed: skolemizeVC(expandedDisclosedVC, false),
+    original: skolemizedAndExpandedOriginalVC,
+    disclosed: skolemizedAndExpandedDisclosedVC,
   };
 };
 
@@ -112,7 +127,8 @@ export const getPredicatesRDF = (
       documentLoader,
       safe: true,
     });
-    const skolemizedAndExpandedPredicate = skolemizeVC(expandedPredicate);
+    const skolemizedAndExpandedPredicate =
+      skolemizeExpandedVC(expandedPredicate);
     const skolemizedAndExpandedPredicateRDF = await jsonldToRDF(
       skolemizedAndExpandedPredicate,
       documentLoader,
@@ -122,14 +138,14 @@ export const getPredicatesRDF = (
   });
 
 const diffJSONLD = (
-  node: JsonValue,
+  json: JsonValue,
   path: (string | number)[],
   deanonMap: Map<string, string>,
   skolemIDMap: Map<(string | number)[], string>,
   maskedLiteralPaths: (string | number)[][],
 ) => {
-  if (Array.isArray(node)) {
-    node.forEach((item, i) => {
+  if (Array.isArray(json)) {
+    json.forEach((item, i) => {
       const updatedPath = path.concat([i]);
 
       if (!Array.isArray(item)) {
@@ -145,10 +161,10 @@ const diffJSONLD = (
         );
       }
     });
-  } else if (typeof node === 'object' && node !== null) {
-    for (const key in node) {
+  } else if (typeof json === 'object' && json != null) {
+    Object.keys(json).forEach((key) => {
       if (key === '@id') {
-        const oldAndNew = node[key];
+        const oldAndNew = json[key];
         if (
           typeof oldAndNew === 'object' &&
           oldAndNew !== null &&
@@ -169,10 +185,10 @@ const diffJSONLD = (
           throw new TypeError('json-diff error: __old or __new do not exist');
         }
       } else if (key === '@value') {
-        const oldAndNew = node[key];
+        const oldAndNew = json[key];
         if (
           typeof oldAndNew === 'object' &&
-          oldAndNew !== null &&
+          oldAndNew != null &&
           '__old' in oldAndNew &&
           '__new' in oldAndNew
         ) {
@@ -191,7 +207,7 @@ const diffJSONLD = (
           throw new TypeError('json-diff error: __old or __new do not exist');
         }
       } else if (key === '@id__deleted') {
-        const value = node[key] as string;
+        const value = json[key] as string;
         if (value.startsWith(SKOLEM_PREFIX)) {
           skolemIDMap.set(path, value);
         } else {
@@ -201,7 +217,7 @@ const diffJSONLD = (
         }
       } else if (!key.endsWith('__deleted')) {
         const updatedPath = path.concat([key]);
-        const value = node[key];
+        const value = json[key];
         if (typeof value === 'object') {
           diffJSONLD(
             value,
@@ -212,7 +228,7 @@ const diffJSONLD = (
           );
         }
       }
-    }
+    });
   }
 
   return {};
@@ -221,7 +237,7 @@ const diffJSONLD = (
 const diffVC = (
   vc: jsonld.JsonLdDocument,
   disclosed: jsonld.JsonLdDocument,
-) => {
+): DiffVCResult => {
   const diffObj = diff(vc, disclosed) as JsonValue;
   const deanonMap = new Map<string, string>();
   const skolemIDMap = new Map<(string | number)[], string>();
@@ -235,30 +251,23 @@ const diffVC = (
 const traverseJSON = (root: JsonValue, path: (string | number)[]) => {
   let node = root;
 
-  for (const item of path) {
-    if (Array.isArray(node)) {
-      if (typeof item !== 'number') {
-        throw new Error(
-          'internal error when injecting skolem IDs to disclosed VC',
-        );
-      }
-      node = node[item];
-    } else if (typeof node === 'object' && node !== null) {
-      if (typeof item !== 'string') {
-        throw new Error(
-          'internal error when injecting skolem IDs to disclosed VC',
-        );
-      }
-      node = node[item];
+  path.forEach((pathItem) => {
+    if (Array.isArray(node) && typeof pathItem === 'number') {
+      node = node[pathItem];
+    } else if (
+      !Array.isArray(node) &&
+      typeof node === 'object' &&
+      node != null &&
+      typeof pathItem === 'string'
+    ) {
+      node = node[pathItem];
     } else {
-      throw new Error(
-        'internal error when injecting skolem IDs to disclosed VC',
-      );
+      throw new Error('internal error when processing disclosed VC');
     }
-  }
+  });
 
   if (typeof node !== 'object' || node === null || Array.isArray(node)) {
-    throw new Error('internal error when injecting skolem IDs to disclosed VC');
+    throw new Error('internal error when processing disclosed VC');
   }
 
   return node;
@@ -298,20 +307,7 @@ const expandedVCToRDF = async (
   return { documentRDF, proofRDF };
 };
 
-export const getRDFAndDeanonMaps = async (
-  vcPairs: VcPair[],
-  documentLoader: DocumentLoader,
-) => {
-  const skolemizedAndExpandedVcPairs = await Promise.all(
-    vcPairs.map((vcPair) => skolemizeAndExpandVcPair(vcPair, documentLoader)),
-  );
-
-  // compare VC and disclosed VC to get local deanon map and skolem ID map
-  const diffObjs = skolemizedAndExpandedVcPairs.map(({ original, disclosed }) =>
-    diffVC(original, disclosed),
-  );
-
-  // aggregate deanon maps
+const aggregateLocalDeanonMaps = (diffObjs: DiffVCResult[]) => {
   const deanonMap = new Map<string, string>();
   diffObjs.forEach(({ deanonMap: localDeanonMap }) => {
     localDeanonMap.forEach((value, key) => {
@@ -325,6 +321,32 @@ export const getRDFAndDeanonMaps = async (
       deanonMap.set(key, value);
     });
   });
+
+  return deanonMap;
+};
+
+/**
+ * Retrieves RDF representations of VC pairs and generates a deanon map.
+ * @param vcPairs - An array of VC pairs.
+ * @param documentLoader - The document loader used for resolving JSON-LD documents.
+ * @returns A promise that resolves to an object containing the RDF representations of VC pairs and the deanon map.
+ */
+export const getRDFAndDeanonMaps = async (
+  vcPairs: VCPair[],
+  documentLoader: DocumentLoader,
+): Promise<VCPairsWithDeanonMap> => {
+  // skolemize and expand VCs
+  const skolemizedAndExpandedVcPairs = await Promise.all(
+    vcPairs.map((vcPair) => skolemizeAndExpandVcPair(vcPair, documentLoader)),
+  );
+
+  // compare VC and disclosed VC to get local deanon map and skolem ID map
+  const diffObjs = skolemizedAndExpandedVcPairs.map(({ original, disclosed }) =>
+    diffVC(original, disclosed),
+  );
+
+  // aggregate local deanon maps
+  const deanonMap = aggregateLocalDeanonMaps(diffObjs);
 
   // update disclosed VCs
   skolemizedAndExpandedVcPairs.forEach(({ disclosed }, i) => {
@@ -366,7 +388,7 @@ export const getRDFAndDeanonMaps = async (
     });
   });
 
-  const vcPairsRDF = await Promise.all(
+  const vcPairRDFs = await Promise.all(
     skolemizedAndExpandedVcPairs.map(async ({ original, disclosed }) => {
       // convert VC to N-Quads
       const {
@@ -402,10 +424,19 @@ export const getRDFAndDeanonMaps = async (
     }),
   );
 
-  return { vcPairsRDF, deanonMap };
+  return { vcPairRDFs, deanonMap };
 };
 
-export const vcToRDF = async (vc: VC, documentLoader: DocumentLoader) => {
+/**
+ * Converts a Verifiable Credential (VC) object to RDF format.
+ * @param vc The Verifiable Credential object to convert.
+ * @param documentLoader The document loader used to resolve external JSON-LD documents.
+ * @returns A Promise that resolves to an object containing the original VC, its RDF representation, the proof object, and its RDF representation.
+ */
+export const vcToRDF = async (
+  vc: VC,
+  documentLoader: DocumentLoader,
+): Promise<VCRDF> => {
   const clonedVC = JSON.parse(JSON.stringify(vc)) as VC;
 
   const { proof } = clonedVC;
@@ -422,10 +453,16 @@ export const vcToRDF = async (vc: VC, documentLoader: DocumentLoader) => {
   return { document, documentRDF, proof, proofRDF };
 };
 
+/**
+ * Converts a proof in RDF format to a JSON-LD proof object.
+ * @param proofRDF The proof in RDF format.
+ * @param documentLoader The document loader used for resolving external resources during JSON-LD processing.
+ * @returns A Promise that resolves to the JSON-LD proof object.
+ */
 export const jsonldProofFromRDF = async (
   proofRDF: string,
   documentLoader: DocumentLoader,
-) => {
+): Promise<jsonld.NodeObject> => {
   const proofFrame: jsonld.JsonLdDocument = {
     '@context': DATA_INTEGRITY_CONTEXT,
     type: 'DataIntegrityProof',
@@ -445,11 +482,18 @@ export const jsonldProofFromRDF = async (
   return out;
 };
 
+/**
+ * Converts RDF data representing a Verifiable Presentation (VP) into a JSON-LD Node Object.
+ * @param vpRDF The RDF data representing the Verifiable Presentation.
+ * @param context The JSON-LD context definition.
+ * @param documentLoader The document loader used for resolving external resources.
+ * @returns A Promise that resolves to the JSON-LD Node Object representing the Verifiable Presentation.
+ */
 export const jsonldVPFromRDF = async (
   vpRDF: string,
   context: jsonld.ContextDefinition,
   documentLoader: DocumentLoader,
-) => {
+): Promise<jsonld.NodeObject> => {
   const vpFrame: jsonld.JsonLdDocument = {
     type: 'VerifiablePresentation',
     proof: {},
