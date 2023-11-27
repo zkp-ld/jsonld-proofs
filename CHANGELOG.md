@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.10.0] - 2023-11-27
+
+### Added
+
+- Several functions now include comments (assisted by GitHub Copilot)
+
+### Fixed
+
+- Update tests to resolve errors with vitest/jest
+
+### Changed
+
+- Rename and add several types, e.g., `VcPair` to `VCPair`
+- Refactor internal processing (assisted by GitHub Copilot)
+- Remove unused dependencies
+- Update ESLint configurations
+
 ## [0.9.0] - 2023-10-18
 
 ### Added
