@@ -33,21 +33,21 @@
   "dependencies": {
     "@zkp-ld/rdf-proofs-wasm": "0.13.1",
     "json-diff": "git+https://github.com/Sequoia/json-diff.git#6085db5",
-    "jsonld": "^8.3.1",
-    "nanoid": "^5.0.3"
+    "jsonld": "^8.3.2",
+    "nanoid": "^5.0.4"
   },
   "devDependencies": {
-    "@types/json-diff": "^1.0.0",
+    "@types/json-diff": "^1.0.3",
     "@types/jsonld": "./@types/jsonld",
-    "@typescript-eslint/eslint-plugin": "^6.12.0",
-    "@typescript-eslint/parser": "^6.12.0",
-    "eslint": "^8.54.0",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
+    "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.1.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-import": "^2.29.0",
-    "prettier": "^3.1.0",
-    "typescript": "^5.3.2",
-    "vitest": "^0.34.6"
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.3"
   }
 }
