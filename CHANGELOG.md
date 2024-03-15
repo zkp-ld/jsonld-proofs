@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.11.0] - 2024-03-15
+
+### Fixed
+
+- Remove `"type": "module"` from `package.json` to resolve inconsistency with CJS usage. (This package is intended to be used as a CommonJS module. However, the presence of `"type": "module"` in `package.json` was misleading and could cause issues in environments expecting CJS modules. This change ensures compatibility and clarity by removing the inconsistent module type specification.)
+
+### Changed
+
+- Upgrade dependencies
+
 ## [0.10.1] - 2024-01-11
 
 ### Changed
