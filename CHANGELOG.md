@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2] - 2024-03-18
+
+### Changed
+
+- Upgraded dependencies
+- Added a negative test for deriveProof without VCs nor PPID
+
 ## [0.11.1] - 2024-03-18
 
 ### Changed
