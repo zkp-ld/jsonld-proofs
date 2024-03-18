@@ -421,4 +421,18 @@ describe('Proofs', () => {
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
+
+  test('deriveProof without VCs nor PPID', async () => {
+    const challenge = 'abcde';
+    const domain = 'example.org';
+    const secret = new Uint8Array(Buffer.from('SECRET'));
+    await expect(
+      deriveProof([], keypairs, vpContext, localDocumentLoader, {
+        challenge,
+        secret,
+        domain,
+        withPpid: false,
+      }),
+    ).rejects.toThrowError('RDFProofsError(MissingInputToDeriveProof)');
+  });
 });
