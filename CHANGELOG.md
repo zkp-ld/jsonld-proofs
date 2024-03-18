@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.1] - 2024-03-18
+
+### Changed
+
+- Upgraded dependencies
+- Added a test for deriving and verifying VP without VCs
+
+### Fixed
+
+- Rename a variable to conform to naming rules
+
 ## [0.11.0] - 2024-03-15
 
 ### Fixed
