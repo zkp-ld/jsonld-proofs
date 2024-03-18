@@ -24,11 +24,11 @@ const vpContext = _vpContext as unknown as jsonld.ContextDefinition;
 describe('Blind Signatures', () => {
   test('blind sign and verify', async () => {
     const secret = new Uint8Array(Buffer.from('SECRET'));
-    const challenge_for_blind_sign = 'abcde';
+    const challengeForBlindSign = 'abcde';
 
     const { commitment, pokForCommitment, blinding } = await requestBlindSign(
       secret,
-      challenge_for_blind_sign,
+      challengeForBlindSign,
     );
     expect(commitment).toBeDefined();
     expect(pokForCommitment).toBeDefined();
@@ -41,7 +41,7 @@ describe('Blind Signatures', () => {
     const verifiedRequest = await verifyBlindSignRequest(
       commitment,
       pokForCommitment,
-      challenge_for_blind_sign,
+      challengeForBlindSign,
     );
     expect(verifiedRequest.verified).toBeTruthy();
 
@@ -92,7 +92,7 @@ describe('Blind Signatures', () => {
 
     const blindSignRequest = await requestBlindSign(secret, undefined, true);
 
-    const challenge_for_derive_proof = 'xyz';
+    const challengeForDeriveProof = 'xyz';
     const domain = 'example.org';
 
     const vp = await deriveProof(
@@ -104,7 +104,7 @@ describe('Blind Signatures', () => {
       vpContext,
       localDocumentLoader,
       {
-        challenge: challenge_for_derive_proof,
+        challenge: challengeForDeriveProof,
         domain,
         secret,
         blindSignRequest,
@@ -120,7 +120,7 @@ describe('Blind Signatures', () => {
     );
 
     const proofVerified = await verifyProof(vp, keypairs, localDocumentLoader, {
-      challenge: challenge_for_derive_proof,
+      challenge: challengeForDeriveProof,
       domain,
     });
     expect(proofVerified.verified).toBeTruthy();
