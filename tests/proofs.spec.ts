@@ -400,4 +400,25 @@ describe('Proofs', () => {
     console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
     expect(verified.verified).toBeTruthy();
   });
+
+  test('deriveProof and verifyProof without VCs but with PPID', async () => {
+    const challenge = 'abcde';
+    const domain = 'example.org';
+    const secret = new Uint8Array(Buffer.from('SECRET'));
+    const vp = await deriveProof([], keypairs, vpContext, localDocumentLoader, {
+      challenge,
+      secret,
+      domain,
+      withPpid: true,
+    });
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
+    expect(vp).not.toHaveProperty('error');
+
+    const verified = await verifyProof(vp, keypairs, localDocumentLoader, {
+      challenge,
+      domain,
+    });
+    console.log(`verified: ${JSON.stringify(verified, null, 2)}`);
+    expect(verified.verified).toBeTruthy();
+  });
 });
