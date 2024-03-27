@@ -15,13 +15,11 @@ export * from './jsonld';
 type MimeNQuad = 'application/n-quads';
 type RdfDataSet = object;  // Placeholder
 type Callback<T> = (err: Error, res: T) => void;
+type DocumentLoader = (url: Url) => Promise<RemoteDocument>;
 
-/**
- * Document loaders.
- */
 export namespace documentLoaders {
-  let node: DocLoader;
-  let xhr: DocLoader;
+    const node: () => DocumentLoader;
+    const xhr: () => DocumentLoader;
 }
 
 /*
@@ -31,7 +29,7 @@ export namespace documentLoaders {
 
 export namespace Options {
     interface DocLoader {
-        documentLoader?: (url: Url) => Promise<RemoteDocument>;
+        documentLoader?: DocumentLoader;
     }
 
     interface Safe {
