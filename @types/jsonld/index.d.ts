@@ -9,6 +9,7 @@ import {
     JsonLdDocument,
     ContextDefinition,
 } from './jsonld';
+
 export * from './jsonld';
 
 // Some typealiases for better readability and some placeholders
@@ -73,7 +74,7 @@ export namespace Options {
     }
 
     interface Normalize extends Common {
-        algorithm?: 'URDNA2015' | `URGNA2012` | undefined;
+        algorithm?: 'URDNA2015' | 'URGNA2012' | undefined;
         skipExpansion?: boolean | undefined;
         expansion?: boolean | undefined;
         inputFormat?: MimeNQuad | undefined;
@@ -129,8 +130,8 @@ export function expand(input: JsonLdDocument, options: Options.Expand, callback:
 export function expand(input: JsonLdDocument, callback: Callback<JsonLdArray>): void;
 export function expand(input: JsonLdDocument, options?: Options.Expand): Promise<JsonLdArray>;
 
-export function flatten(input: JsonLdDocument, ctx: ContextDefinition|null, options: Options.Flatten, callback: Callback<JsonLdObj>): void;
-export function flatten(input: JsonLdDocument, ctx: ContextDefinition|null, callback: Callback<JsonLdObj>): void;
+export function flatten(input: JsonLdDocument, ctx: ContextDefinition | null, options: Options.Flatten, callback: Callback<JsonLdObj>): void;
+export function flatten(input: JsonLdDocument, ctx: ContextDefinition | null, callback: Callback<JsonLdObj>): void;
 export function flatten(input: JsonLdDocument, ctx?: ContextDefinition, options?: Options.Flatten): Promise<JsonLdObj>;
 
 export function frame(input: JsonLdDocument, frame: Frame, options: Options.Frame, callback: Callback<JsonLdObj>): void;
@@ -154,7 +155,7 @@ export function toRDF(input: JsonLdDocument, options?: Options.ToRdf): Promise<R
 export let JsonLdProcessor: JsonLdProcessorInterface;
 
 // disable autoexport
-export {};
+export { };
 
 // TODO: Complete and export the following types if needed!
 // ************************************************************************************

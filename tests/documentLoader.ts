@@ -23,12 +23,11 @@ export const localDocumentLoader = async (
   } as RemoteDocument;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+// grab the built-in Node.js document loader
 const nodeDocumentLoader = jsonld.documentLoaders.node();
 
 export const remoteDocumentLoader = async (
   url: Url,
-  // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<RemoteDocument> => {
   if (url in CONTEXTS) {
     return {
@@ -40,7 +39,8 @@ export const remoteDocumentLoader = async (
   }
 
   // call the default documentLoader
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
-  return await nodeDocumentLoader(url);
+  const res = await nodeDocumentLoader(url);
+
+  return res;
 };
 
