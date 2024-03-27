@@ -31,9 +31,7 @@ export namespace documentLoaders {
 
 export namespace Options {
     interface DocLoader {
-        documentLoader?: ((url: Url,
-            callback: (err: Error, remoteDoc: RemoteDocument) => void)
-                => Promise<RemoteDocument>) | undefined;        
+        documentLoader?: (url: Url) => Promise<RemoteDocument>;
     }
 
     interface Safe {

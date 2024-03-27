@@ -4,7 +4,6 @@ import { CONTEXTS } from './contexts';
 
 export const localDocumentLoader = async (
   url: Url,
-  _callback: (err: Error, remoteDoc: RemoteDocument) => void,
   // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<RemoteDocument> => {
   if (url in CONTEXTS) {
@@ -29,7 +28,6 @@ const nodeDocumentLoader = jsonld.documentLoaders.node();
 
 export const remoteDocumentLoader = async (
   url: Url,
-  _callback: (err: Error, remoteDoc: RemoteDocument) => void,
   // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<RemoteDocument> => {
   if (url in CONTEXTS) {
