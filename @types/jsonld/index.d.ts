@@ -16,7 +16,7 @@ export * from './jsonld';
 type MimeNQuad = 'application/n-quads';
 type RdfDataSet = object;  // Placeholder
 type Callback<T> = (err: Error, res: T) => void;
-type DocumentLoader = (url: Url) => Promise<RemoteDocument>;
+export type DocumentLoader = (url: Url) => Promise<RemoteDocument>;
 
 export namespace documentLoaders {
     const node: () => DocumentLoader;
