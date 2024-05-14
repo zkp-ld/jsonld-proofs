@@ -1,7 +1,8 @@
 import * as jsonld from 'jsonld';
 import { CONTEXTS } from './contexts';
+import { DocumentLoader } from '../src/types';
 
-export const localDocumentLoader: jsonld.DocumentLoader = async (
+export const localDocumentLoader: DocumentLoader = async (
   url
   // eslint-disable-next-line @typescript-eslint/require-await
 ) => {
@@ -25,7 +26,7 @@ export const localDocumentLoader: jsonld.DocumentLoader = async (
 // grab the built-in Node.js document loader
 const nodeDocumentLoader = jsonld.documentLoaders.node();
 
-export const remoteDocumentLoader: jsonld.DocumentLoader = async (
+export const remoteDocumentLoader: DocumentLoader = async (
   url
 ) => {
   if (url in CONTEXTS) {
