@@ -54,7 +54,7 @@ export type JsonValue = JsonPrimitive | JsonArray | JsonObject;
 export type DocumentLoader =
   | ((
       url: Url,
-      callback: (err: Error, remoteDoc: RemoteDocument) => void,
+      callback?: (err: Error, remoteDoc: RemoteDocument) => void,
     ) => Promise<RemoteDocument>)
   | undefined;
 
