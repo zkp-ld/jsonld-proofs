@@ -51,7 +51,12 @@ export interface JsonObject {
 }
 export type JsonValue = JsonPrimitive | JsonArray | JsonObject;
 
-export type DocumentLoader = (url: Url) => Promise<RemoteDocument>;
+export type DocumentLoader =
+  | ((
+      url: Url,
+      callback: (err: Error, remoteDoc: RemoteDocument) => void,
+    ) => Promise<RemoteDocument>)
+  | undefined;
 
 export interface DeriveProofOptions {
   readonly challenge?: string;
