@@ -15,8 +15,8 @@ type RdfDataSet = object; // Placeholder
 type Callback<T> = (err: Error, res: T) => void;
 
 export namespace documentLoaders {
-    function node(): (url: Url, callback?: (err: Error, remoteDoc: RemoteDocument) => void) => Promise<RemoteDocument>;
-    function xhr(): (url: Url, callback?: (err: Error, remoteDoc: RemoteDocument) => void) => Promise<RemoteDocument>;
+    function node(): (url: Url) => Promise<RemoteDocument>;
+    function xhr(): (url: Url) => Promise<RemoteDocument>;
 }
 
 /*
@@ -26,9 +26,7 @@ export namespace documentLoaders {
 
 export namespace Options {
     interface DocLoader {
-        documentLoader?:
-            | ((url: Url, callback?: (err: Error, remoteDoc: RemoteDocument) => void) => Promise<RemoteDocument>)
-            | undefined;
+        documentLoader?: (url: Url) => Promise<RemoteDocument>;
     }
 
     interface Safe {
