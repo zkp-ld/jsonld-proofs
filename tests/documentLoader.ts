@@ -1,19 +1,18 @@
 import * as jsonld from 'jsonld';
-import { RemoteDocument, Url } from 'jsonld/jsonld-spec';
 import { CONTEXTS } from './contexts';
+import { DocumentLoader } from '../src/types';
 
-export const localDocumentLoader = async (
-  url: Url,
-  _callback: (err: Error, remoteDoc: RemoteDocument) => void,
+export const localDocumentLoader: DocumentLoader = async (
+  url
   // eslint-disable-next-line @typescript-eslint/require-await
-): Promise<RemoteDocument> => {
+) => {
   if (url in CONTEXTS) {
     return {
       contextUrl: undefined, // this is for a context via a link header
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       document: CONTEXTS[url], // this is the actual document that was loaded
       documentUrl: url, // this is the actual context URL after redirects
-    } as RemoteDocument;
+    }
   }
 
   // return empty document if `url` is not in local contexts
@@ -21,28 +20,26 @@ export const localDocumentLoader = async (
     contextUrl: undefined,
     documentUrl: url,
     document: {},
-  } as RemoteDocument;
+  }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+// grab the built-in Node.js document loader
 const nodeDocumentLoader = jsonld.documentLoaders.node();
 
-export const remoteDocumentLoader = async (
-  url: Url,
-  _callback: (err: Error, remoteDoc: RemoteDocument) => void,
-  // eslint-disable-next-line @typescript-eslint/require-await
-): Promise<RemoteDocument> => {
+export const remoteDocumentLoader: DocumentLoader = async (
+  url
+) => {
   if (url in CONTEXTS) {
     return {
       contextUrl: undefined, // this is for a context via a link header
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       document: CONTEXTS[url], // this is the actual document that was loaded
       documentUrl: url, // this is the actual context URL after redirects
-    } as RemoteDocument;
+    }
   }
 
   // call the default documentLoader
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
-  return await nodeDocumentLoader(url);
-};
+  const res = await nodeDocumentLoader(url);
 
+  return res;
+};
