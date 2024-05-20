@@ -1,4 +1,3 @@
-import * as jsonld from 'jsonld';
 import { describe, expect, test } from 'vitest';
 import {
   requestBlindSign,
@@ -17,9 +16,7 @@ import disclosed1 from './example/disclosed1.json';
 import keypairs from './example/keypairs.json';
 import vcDraft0WithoutCryptosuite from './example/vc0_without_cryptosuite.json';
 import vcDraft1 from './example/vc1.json';
-import _vpContext from './example/vpContext.json';
-
-const vpContext = _vpContext as unknown as jsonld.ContextDefinition;
+import vpContext from './example/vpContext.json';
 
 describe('Blind Signatures', () => {
   test('blind sign and verify', async () => {
@@ -101,9 +98,9 @@ describe('Blind Signatures', () => {
         { original: vc1, disclosed: disclosed1 },
       ],
       keypairs,
-      vpContext,
       localDocumentLoader,
       {
+        context: vpContext,
         challenge: challengeForDeriveProof,
         domain,
         secret,
@@ -145,9 +142,9 @@ describe('Blind Signatures', () => {
       deriveProof(
         [{ original: vc0, disclosed: disclosedBound0 }],
         keypairs,
-        vpContext,
         localDocumentLoader,
         {
+          context: vpContext,
           challenge,
           // secret
         },
