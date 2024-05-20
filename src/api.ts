@@ -228,6 +228,7 @@ export const blindVerify = async (
  * Derives a Verifiable Presentation (VP) from a set of Verifiable Credential (VC) pairs using a given set of public keys, context, and document loader.
  * @param vcPairs The array of Verifiable Credential (VC) pairs, where each pair is an array of two VCs: the original VC and the partially-anonymized VC.
  * @param publicKeys The public keys used for deriving the proof.
+ * @param context The JSON-LD context definition.
  * @param documentLoader The document loader used for resolving JSON-LD documents.
  * @param options (Optional) Additional options for deriving the proof.
  * @returns A Promise that resolves to the derived proof as a JSON-LD document.
@@ -235,6 +236,7 @@ export const blindVerify = async (
 export const deriveProof = async (
   vcPairs: VCPair[],
   publicKeys: jsonld.JsonLdDocument,
+  context: jsonld.ContextDefinition,
   documentLoader: DocumentLoader,
   options?: DeriveProofOptions,
 ): Promise<jsonld.JsonLdDocument> => {
@@ -264,7 +266,7 @@ export const deriveProof = async (
     circuits: options?.circuits,
   });
 
-  const jsonldVP = await jsonldVPFromRDF(vp, documentLoader, options?.context);
+  const jsonldVP = await jsonldVPFromRDF(vp, context, documentLoader);
 
   return jsonldVP;
 };

@@ -37,11 +37,9 @@ describe('Proofs', () => {
         { original: vc1, disclosed: disclosed1 },
       ],
       keypairs,
+      vpContext,
       localDocumentLoader,
-      {
-        context: vpContext,
-        challenge,
-      },
+      { challenge },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -59,11 +57,9 @@ describe('Proofs', () => {
     const vp = await deriveProof(
       [{ original: vc3, disclosed: disclosed3 }],
       keypairs,
+      vpContext3,
       remoteDocumentLoader,
-      {
-        context: vpContext3,
-        challenge,
-      },
+      { challenge },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -85,11 +81,9 @@ describe('Proofs', () => {
         { original: vc1, disclosed: disclosed1 },
       ],
       keypairs,
+      vpContext,
       localDocumentLoader,
-      {
-        context: vpContext,
-        challenge,
-      },
+      { challenge },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -107,11 +101,9 @@ describe('Proofs', () => {
     const vp = await deriveProof(
       [{ original: vc4, disclosed: disclosed4 }],
       keypairs,
+      vpContext4,
       localDocumentLoader,
-      {
-        context: vpContext4,
-        challenge,
-      },
+      { challenge },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -165,13 +157,9 @@ describe('Proofs', () => {
     const vp = await deriveProof(
       [{ original: vc2, disclosed: disclosed2 }],
       keypairs,
+      vpContext,
       localDocumentLoader,
-      {
-        context: vpContext,
-        challenge,
-        predicates,
-        circuits,
-      },
+      { challenge, predicates, circuits },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -231,13 +219,9 @@ describe('Proofs', () => {
     const vp = await deriveProof(
       [{ original: vc2, disclosed: disclosed2 }],
       keypairs,
+      vpContext,
       localDocumentLoader,
-      {
-        context: vpContext,
-        challenge,
-        predicates,
-        circuits,
-      },
+      { challenge, predicates, circuits },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -297,13 +281,9 @@ describe('Proofs', () => {
     const vp = await deriveProof(
       [{ original: vc2, disclosed: disclosed2 }],
       keypairs,
+      vpContext,
       localDocumentLoader,
-      {
-        context: vpContext,
-        challenge,
-        predicates,
-        circuits,
-      },
+      { challenge, predicates, circuits },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -397,13 +377,9 @@ describe('Proofs', () => {
         { original: vc1, disclosed: disclosed1 },
       ],
       keypairs,
+      vpContext,
       localDocumentLoader,
-      {
-        context: vpContext,
-        challenge,
-        predicates,
-        circuits,
-      },
+      { challenge, predicates, circuits },
     );
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
@@ -429,8 +405,7 @@ describe('Proofs', () => {
     const challenge = 'abcde';
     const domain = 'example.org';
     const secret = new Uint8Array(Buffer.from('SECRET'));
-    const vp = await deriveProof([], keypairs, localDocumentLoader, {
-      context: vpContext,
+    const vp = await deriveProof([], keypairs, vpContext, localDocumentLoader, {
       challenge,
       secret,
       domain,
@@ -452,8 +427,7 @@ describe('Proofs', () => {
     const domain = 'example.org';
     const secret = new Uint8Array(Buffer.from('SECRET'));
     await expect(
-      deriveProof([], keypairs, localDocumentLoader, {
-        context: vpContext,
+      deriveProof([], keypairs, vpContext, localDocumentLoader, {
         challenge,
         secret,
         domain,

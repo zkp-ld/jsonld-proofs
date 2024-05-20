@@ -50,13 +50,10 @@ export interface JsonObject {
   [key: string]: JsonValue;
 }
 export type JsonValue = JsonPrimitive | JsonArray | JsonObject;
-type OrArray<T> = T | T[];
-export type JsonLdContextHeader = OrArray<string | jsonld.ContextDefinition>;
 
 export type DocumentLoader = (url: Url) => Promise<RemoteDocument>;
 
 export interface DeriveProofOptions {
-  readonly context?: JsonLdContextHeader;
   readonly challenge?: string;
   readonly domain?: string;
   readonly secret?: Uint8Array;

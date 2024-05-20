@@ -6,7 +6,6 @@ import {
   DiffVCResult,
   DocumentLoader,
   ExpandedJsonldPair,
-  JsonLdContextHeader,
   JsonObject,
   JsonValue,
   VC,
@@ -17,9 +16,7 @@ import {
 } from './types';
 
 const PROOF = 'https://w3id.org/security#proof';
-const VC_CONTEXT = 'https://www.w3.org/2018/credentials/v1';
 const DATA_INTEGRITY_CONTEXT = 'https://www.w3.org/ns/data-integrity/v1';
-const ZKPLD_CONTEXT = 'https://zkp-ld.org/context.jsonld';
 const SKOLEM_PREFIX = 'urn:bnid:';
 const SKOLEM_REGEX = /[<"]urn:bnid:([^>"]+)[>"]/g;
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10);
@@ -488,26 +485,15 @@ export const jsonldProofFromRDF = async (
 /**
  * Converts RDF data representing a Verifiable Presentation (VP) into a JSON-LD Node Object.
  * @param vpRDF The RDF data representing the Verifiable Presentation.
+ * @param context The JSON-LD context definition.
  * @param documentLoader The document loader used for resolving external resources.
- * @param context The JSON-LD context definition to be used in the output JSON-LD VP object.
  * @returns A Promise that resolves to the JSON-LD Node Object representing the Verifiable Presentation.
  */
 export const jsonldVPFromRDF = async (
   vpRDF: string,
+  context: jsonld.ContextDefinition,
   documentLoader: DocumentLoader,
-  context?: JsonLdContextHeader,
 ): Promise<jsonld.NodeObject> => {
-  const defaultContext: (string | jsonld.ContextDefinition)[] = [
-    VC_CONTEXT,
-    DATA_INTEGRITY_CONTEXT,
-    ZKPLD_CONTEXT,
-  ];
-  if (Array.isArray(context)) {
-    defaultContext.push(...context);
-  } else if (context !== undefined) {
-    defaultContext.push(context);
-  }
-
   const vpFrame: jsonld.JsonLdDocument = {
     type: 'VerifiablePresentation',
     proof: {},
@@ -522,7 +508,7 @@ export const jsonldVPFromRDF = async (
       },
     ],
   };
-  vpFrame['@context'] = defaultContext;
+  vpFrame['@context'] = context;
 
   const vpRDFObj = vpRDF as unknown as object;
   const expandedJsonld = await jsonld.fromRDF(vpRDFObj, {
