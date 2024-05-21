@@ -245,7 +245,10 @@ export const deriveProof = async (
     documentLoader,
   );
 
-  const publicKeysRDF = await jsonldToRDF(publicKeys, documentLoader);
+  const publicKeysRDF =
+    Object.keys(publicKeys).length === 0 // if publicKeys is empty
+      ? ''
+      : await jsonldToRDF(publicKeys, documentLoader);
 
   const predicatesRDF = options?.predicates
     ? await Promise.all(getPredicatesRDF(options.predicates, documentLoader))
