@@ -289,7 +289,11 @@ export const verifyProof = async (
   await initializeWasm();
 
   const vpRDF = await jsonldToRDF(vp, documentLoader);
-  const publicKeysRDF = await jsonldToRDF(publicKeys, documentLoader);
+
+  const publicKeysRDF =
+    Object.keys(publicKeys).length === 0 // if publicKeys is empty
+      ? ''
+      : await jsonldToRDF(publicKeys, documentLoader);
 
   const verified = verifyProofWasm({
     vp: vpRDF,
