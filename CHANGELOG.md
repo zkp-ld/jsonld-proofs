@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.12.0] - 2024-05-21
+
+### Changed
+
+- Sync and Update `@types/jsonld` Definitions, Optionalize `documentLoader` Callback (#8)
+  - Regarding `@types/jsonld`:
+    - Sync `jsonld.d.ts` and `jsonld-spec.d.ts` with the latest version of `@types/jsonld`.
+    - Update `index.d.ts` to minimize the difference with its original version.
+    - **BREAKING**: Remove the `callback` parameter of the `documentLoader` function, as it has been deprecated in version 2.0.0 of `jsonld`.
+    - Fix the `node` and `xhr` definitions in the `documentLoaders` namespace.
+  - Regarding `src/types.ts`:
+    - **BREAKING**: Remove the `callback` parameter of the `documentLoader` function, as it has been deprecated in version 2.0.0 of `jsonld`.
+- Make `context` parameter in `deriveProof` optional and add a default value for the VP context (#9)
+  - **BREAKING**: Make context parameter in deriveProof optional and add a default value for the VP context.
+- Allow `publicKeys` in `deriveProof` to be empty to support cases where a VP does not contain a VC
+
+### Fixed
+
+- Change `nanoid` from v5 (for ESM) to v3 (for CJS)
+- Run npm audit fix and update internal packages (`undici` and `vite`)
+
 ## [0.11.2] - 2024-03-18
 
 ### Changed
