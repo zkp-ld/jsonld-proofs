@@ -429,8 +429,7 @@ describe('Proofs', () => {
     const challenge = 'abcde';
     const domain = 'example.org';
     const secret = new Uint8Array(Buffer.from('SECRET'));
-    const vp = await deriveProof([], keypairs, localDocumentLoader, {
-      context: vpContext,
+    const vp = await deriveProof([], {}, localDocumentLoader, {
       challenge,
       secret,
       domain,
@@ -439,7 +438,7 @@ describe('Proofs', () => {
     console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
     expect(vp).not.toHaveProperty('error');
 
-    const verified = await verifyProof(vp, keypairs, localDocumentLoader, {
+    const verified = await verifyProof(vp, {}, localDocumentLoader, {
       challenge,
       domain,
     });
@@ -460,5 +459,16 @@ describe('Proofs', () => {
         withPpid: false,
       }),
     ).rejects.toThrowError('RDFProofsError(MissingInputToDeriveProof)');
+  });
+
+  test('deriveProof with VC but without issuer public keys', async () => {
+    const vc0 = await sign(vcDraft0, keypairs, localDocumentLoader);
+    await expect(
+      deriveProof(
+        [{ original: vc0, disclosed: disclosed0 }],
+        {},
+        localDocumentLoader,
+      ),
+    ).rejects.toThrowError('RDFProofsError(InvalidVerificationMethod)');
   });
 });

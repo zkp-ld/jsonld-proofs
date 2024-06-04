@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.12.1] - 2024-06-04
+
+### Changed
+
+- Allow `publicKeys` in `verifyProof` to be empty to support cases where a VP does not contain a VC
+
 ## [0.12.0] - 2024-05-21
 
 ### Changed

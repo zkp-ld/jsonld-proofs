@@ -123,6 +123,34 @@ describe('Blind Signatures', () => {
     expect(proofVerified.verified).toBeTruthy();
   });
 
+  test('derive proof from bound credential with secret', async () => {
+    const secret = new Uint8Array(Buffer.from('SECRET'));
+    const challenge = 'abcde';
+
+    const { commitment, blinding } = await requestBlindSign(secret, challenge);
+
+    const blindedVC = await blindSign(
+      commitment,
+      vcDraft0WithoutCryptosuite,
+      keypairs,
+      localDocumentLoader,
+    );
+
+    const vc0 = await unblind(blindedVC, blinding, localDocumentLoader);
+
+    const vp = await deriveProof(
+      [{ original: vc0, disclosed: disclosedBound0 }],
+      keypairs,
+      localDocumentLoader,
+      {
+        context: vpContext,
+        challenge,
+        secret,
+      },
+    );
+    expect(vp).not.toHaveProperty('error');
+  });
+
   test('derive proof from bound credential without secret', async () => {
     const secret = new Uint8Array(Buffer.from('SECRET'));
     const challenge = 'abcde';
@@ -150,5 +178,55 @@ describe('Blind Signatures', () => {
         },
       ),
     ).rejects.toThrowError('RDFProofsError(MissingSecret)');
+  });
+
+  test('derive proof with blind sign request', async () => {
+    const secret = new Uint8Array(Buffer.from('SECRET'));
+    const challenge = 'abcde';
+
+    const { commitment, blinding } = await requestBlindSign(secret, challenge);
+
+    const blindedVC = await blindSign(
+      commitment,
+      vcDraft0WithoutCryptosuite,
+      keypairs,
+      localDocumentLoader,
+    );
+
+    const vc0 = await unblind(blindedVC, blinding, localDocumentLoader);
+
+    const newBlindSignRequest = await requestBlindSign(secret, challenge);
+
+    const vp = await deriveProof(
+      [{ original: vc0, disclosed: disclosedBound0 }],
+      keypairs,
+      localDocumentLoader,
+      {
+        context: vpContext,
+        challenge,
+        secret,
+        blindSignRequest: newBlindSignRequest,
+      },
+    );
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
+    expect(vp).not.toHaveProperty('error');
+  });
+
+  test('derive proof without VC but with blind sign request', async () => {
+    const secret = new Uint8Array(Buffer.from('SECRET'));
+    const challenge = 'abcde';
+    const domain = 'example.org';
+
+    const newBlindSignRequest = await requestBlindSign(secret, challenge);
+
+    const vp = await deriveProof([], {}, localDocumentLoader, {
+      challenge,
+      secret,
+      domain,
+      blindSignRequest: newBlindSignRequest,
+      withPpid: true,
+    });
+    console.log(`vp:\n${JSON.stringify(vp, null, 2)}`);
+    expect(vp).not.toHaveProperty('error');
   });
 });
