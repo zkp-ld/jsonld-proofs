@@ -41,7 +41,7 @@ export const jsonldToRDF = async (
     format: 'application/n-quads',
     documentLoader,
     safe: true,
-  })) as unknown as string;
+  })) as string;
 
 const skolemizeJSONLD = (
   json: JsonValue,
@@ -471,8 +471,7 @@ export const jsonldProofFromRDF = async (
     type: 'DataIntegrityProof',
   };
 
-  const proofRDFObj = proofRDF as unknown as object;
-  const expandedJsonld = await jsonld.fromRDF(proofRDFObj, {
+  const expandedJsonld = await jsonld.fromRDF(proofRDF, {
     format: 'application/n-quads',
     safe: true,
   });
@@ -524,8 +523,7 @@ export const jsonldVPFromRDF = async (
   };
   vpFrame['@context'] = defaultContext;
 
-  const vpRDFObj = vpRDF as unknown as object;
-  const expandedJsonld = await jsonld.fromRDF(vpRDFObj, {
+  const expandedJsonld = await jsonld.fromRDF(vpRDF, {
     format: 'application/n-quads',
     safe: true,
   });

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.2] - 2024-08-16
+
+### Changed
+
+- Sync and Update `@types/jsonld` Definitions
+- Update usages of `jsonld.fromRDF` and `jsonld.toRDF` to sync with `@types/jsonld` update
+- Update npm dependencies for `braces`, `fill-range`, `@types/node`, and `vitest`
+    
 ## [0.12.1] - 2024-06-04
 
 ### Changed
