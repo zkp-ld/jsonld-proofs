@@ -39,6 +39,8 @@ import {
   getPredicatesRDF,
 } from './utils';
 
+export type { BlindSignRequest, KeyPair, VerifyResult };
+
 /**
  * Generates a key pair for signing and verification.
  * @returns A Promise that resolves to the generated key pair.

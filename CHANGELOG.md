@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.3] - 2024-08-19
+
+### Changed
+
+- Export additional types that are already used in the APIs
+- Update the `@types/jsonld` definitions
+- Update npm dependencies
+
 ## [0.12.2] - 2024-08-16
 
 ### Changed
