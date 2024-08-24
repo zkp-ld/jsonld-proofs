@@ -9,7 +9,7 @@
     "id": "did:example:issuer0#bls12_381-g2-pub001",
     "type": "Multikey",
     "controller": "did:example:issuer0",
-    "secretKeyMultibase": "uekl-7abY7R84yTJEJ6JRqYohXxPZPDoTinJ7XCcBkmk",
-    "publicKeyMultibase": "ukiiQxfsSfV0E2QyBlnHTK2MThnd7_-Fyf6u76BUd24uxoDF4UjnXtxUo8b82iuPZBOa8BXd1NpE20x3Rfde9udcd8P8nPVLr80Xh6WLgI9SYR6piNzbHhEVIfgd_Vo9P"
+    "secretKeyMultibase": "z4893E1L7AeYfqaduUdLYgcxefWAah8gJB8RhPi7JHQkdRbe",
+    "publicKeyMultibase": "zUC77BjGcGDVWfBdgzqwzp3uuWkoWuRMe8pnx4dkncia5t9LKHVt96BPGBizeSU7BKiV35h1tsuVwHUVt4arZuckxGCb2tTsB3fsY66mQNs5Bwoac2w2iyYFe8uenBUYdAiveEr"
   }
 }
