@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.13.0] - 2024-08-24
+
+### Changed
+
+- **BREAKING**: Upgraded `rdf-proofs-wasm` to change encoding schemes for keys, PPIDs, and proofs
+  - Keys are now encoded in `base58btc` with `multicodec` instead of `base64url`
+  - PPIDs are represented as `did:key` instead of `ppid:`
+  - Proof encodings are now optimized by the latest underlying `docknetwork/crypto` libraries
+- Upgraded npm dependencies
+- Removed unused test vectors
+
 ## [0.12.3] - 2024-08-19
 
 ### Changed
