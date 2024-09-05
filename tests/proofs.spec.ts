@@ -471,4 +471,32 @@ describe('Proofs', () => {
       ),
     ).rejects.toThrowError('RDFProofsError(InvalidVerificationMethod)');
   });
+
+  test('deriveProof should not generate duplicated default contexts', async () => {
+    const VC_CONTEXT = 'https://www.w3.org/2018/credentials/v1';
+    const DATA_INTEGRITY_CONTEXT = 'https://www.w3.org/ns/data-integrity/v1';
+    const ZKPLD_CONTEXT = 'https://zkp-ld.org/context.jsonld';
+    const defaultContext = [VC_CONTEXT, DATA_INTEGRITY_CONTEXT, ZKPLD_CONTEXT];
+    const additionalContext = ['https://schema.org/'];
+
+    // here vcContext intentionally includes the same default context multiple times
+    const vcContext = [...additionalContext, ...defaultContext];
+
+    const vc = await sign(vcDraft2, keypairs, localDocumentLoader);
+    const challenge = 'abcde';
+    const vp = await deriveProof(
+      [{ original: vc, disclosed: vc }],
+      keypairs,
+      localDocumentLoader,
+      {
+        context: vcContext,
+        challenge,
+      },
+    );
+
+    // expect the generated VP not to have duplicated default contexts
+    expect(vp['@context']).toHaveLength(
+      defaultContext.length + additionalContext.length,
+    );
+  });
 });

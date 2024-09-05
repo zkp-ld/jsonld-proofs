@@ -501,10 +501,14 @@ export const jsonldVPFromRDF = async (
     DATA_INTEGRITY_CONTEXT,
     ZKPLD_CONTEXT,
   ];
-  if (Array.isArray(context)) {
-    defaultContext.push(...context);
-  } else if (context !== undefined) {
-    defaultContext.push(context);
+
+  if (context !== undefined) {
+    const additionalContext = Array.isArray(context) ? context : [context];
+    additionalContext.forEach((c) => {
+      if (!defaultContext.includes(c)) {
+        defaultContext.push(c);
+      }
+    });
   }
 
   const vpFrame: jsonld.JsonLdDocument = {
