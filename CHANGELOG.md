@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.2] - 2024-09-05
+
+### Fixed
+
+- Resolved npm publish issue by incrementing the patch version.
+
 ## [0.13.1] - 2024-09-05
 
 ### Changed
