@@ -13,4 +13,4 @@ export {
   KeyPair,
   VerifyResult,
 } from './api';
-export { VC, VCPair } from './types';
+export * from './types';
