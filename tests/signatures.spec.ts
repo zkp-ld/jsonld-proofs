@@ -74,6 +74,6 @@ describe('Signatures', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await expect(
       sign(invalidVC, keypairs, localDocumentLoader),
-    ).rejects.toThrowError('RDFProofsError(InvalidVerificationMethod)');
+    ).rejects.toThrowError('RDFProofsError(VerificationMethodNotFound)');
   });
 });
