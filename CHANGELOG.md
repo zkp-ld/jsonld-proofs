@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.3] - 2024-09-25
+
+### Changed
+
+- Upgrade `rdf-proofs-wasm` to use the latest `rdf-proofs` crate
+- Upgraded npm dependencies
+
 ## [0.13.2] - 2024-09-05
 
 ### Fixed
