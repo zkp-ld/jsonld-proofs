@@ -469,7 +469,7 @@ describe('Proofs', () => {
         {},
         localDocumentLoader,
       ),
-    ).rejects.toThrowError('RDFProofsError(InvalidVerificationMethod)');
+    ).rejects.toThrowError('RDFProofsError(VerificationMethodNotFound)');
   });
 
   test('deriveProof should not generate duplicated default contexts', async () => {
