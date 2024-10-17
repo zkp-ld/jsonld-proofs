@@ -8,6 +8,7 @@
 
 import {
   keyGen as keyGenWasm,
+  ppidGen as ppidGenWasm,
   sign as signWasm,
   verify as verifyWasm,
   deriveProof as deriveProofWasm,
@@ -51,6 +52,24 @@ export const keyGen = async (): Promise<KeyPair> => {
   const keypair = keyGenWasm();
 
   return keypair;
+};
+
+/**
+ * Generates a PPID (Pairwise Pseudonymous Identifier) based on `did:key` for users from their secret and target domain identifier.
+ * @param secret The secret bytes used for generating the PPID.
+ * @param domain The target domain identifier for the PPID.
+ * @returns A Promise that resolves to the generated PPID.
+ * @remarks In this module, the PPID is used as a `did:key` DID that encodes a BLS12-381 G1 element, deterministically derived from the user's secret and the target domain identifier. The same secret and domain will always generate the same PPID, while different domains will result in unlinkable PPIDs.
+ */
+export const ppidGen = async (
+  secret: Uint8Array,
+  domain: string,
+): Promise<string> => {
+  await initializeWasm();
+
+  const ppid = ppidGenWasm(secret, domain);
+
+  return ppid;
 };
 
 /**
