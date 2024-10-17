@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.14.0] - 2024-10-17
+
+### Added
+
+- `ppidGen` API for generating PPID from a user secret and domain identifier
+
+### Changed
+
+- Upgrade `rdf-proofs-wasm` to use the latest `rdf-proofs` crate
+- Upgrade other npm dependencies
+
 ## [0.13.3] - 2024-09-25
 
 ### Changed
